@@ -22,6 +22,7 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
 - **Dark/Light Mode**: Each template has both light and dark variants
 - **Conversation Management**: Save, browse, and manage multiple chat conversations
+- **Persistent Storage**: Database-backed conversation history using Prisma ORM
 - **Message Streaming**: Real-time message streaming for a responsive chat experience
 - **Responsive Design**: Works smoothly on desktop and mobile devices
 - **Customizable Settings**: Adjust parameters like temperature, model selection, and more
@@ -55,6 +56,9 @@ Create a `.env` file in the root directory with the following variables:
 GROQ_API_KEY=your_groq_api_key
 OPENAI_API_KEY=your_openai_api_key
 CLAUDE_API_KEY=your_claude_api_key
+
+# Database configuration
+DATABASE_URL="file:./dev.db"  # SQLite database path
 
 # Optional with defaults
 BACKEND_SERVICE_PROVIDER=groq  # Defaults to 'groq' if not provided
@@ -94,6 +98,33 @@ The project is structured as follows:
 - `/src/pages` - Page components
 - `/src/services` - API services
 - `/src/types` - TypeScript type definitions
+- `/prisma` - Database schema and migrations
+
+## Database Setup
+
+This project uses Prisma ORM with SQLite for persistent storage of conversations and messages.
+
+### Initialize the Database
+
+```bash
+# Install Prisma CLI if not already installed
+npm install -g prisma
+
+# Generate Prisma client
+npx prisma generate
+
+# Create and apply migrations to set up the database
+npx prisma migrate dev --name init
+```
+
+### Database Schema
+
+The database schema includes two main models:
+
+- `Conversation`: Stores chat conversation metadata
+- `Message`: Stores individual messages within conversations
+
+You can view and modify the schema in the `prisma/schema.prisma` file.
 
 ## Contributing
 
@@ -117,6 +148,9 @@ npm run format
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contribuitions
+We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for more information. If you like this project, please consider giving us a star!
 
 ## Acknowledgments
 
