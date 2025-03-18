@@ -73,12 +73,17 @@ export default function ChatPage() {
         <aside
           ref={sidebarRef}
           className={cn(
-            "bg-secondary/30 backdrop-blur-sm w-80 flex-shrink-0 border-r transition-all duration-300 ease-in-out",
+            "bg-secondary/30 backdrop-blur-sm w-80 flex-shrink-0 border-r transition-all duration-300 ease-in-out overflow-hidden",
             isMobile && "absolute inset-y-0 left-0 z-20 h-[calc(100%-4rem)] mt-16",
-            !sidebarOpen && (isMobile ? "-translate-x-full" : "w-0")
+            !sidebarOpen && (isMobile ? "-translate-x-full" : "w-0 opacity-0")
           )}
         >
-          <SidebarConversations />
+          <div className={cn(
+            "w-80 transition-all duration-300",
+            !sidebarOpen && "opacity-0"
+          )}>
+            <SidebarConversations />
+          </div>
         </aside>
 
         {/* Main content */}

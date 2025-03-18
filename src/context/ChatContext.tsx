@@ -14,6 +14,7 @@ type ChatContextType = {
   selectConversation: (id: string) => void;
   addMessage: (role: 'user' | 'assistant' | 'system', content: string) => void;
   deleteConversation: (id: string) => void;
+  renameConversation: (id: string, newTitle: string) => void;
   clearConversations: () => void;
   updateTheme: (template: Template, darkMode: boolean) => void;
 };
@@ -193,6 +194,25 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
+  const renameConversation = useCallback((id: string, newTitle: string) => {
+    setConversations(prev => 
+      prev.map(conv => 
+        conv.id === id 
+          ? {
+              ...conv,
+              title: newTitle,
+              updatedAt: new Date()
+            } 
+          : conv
+      )
+    );
+    
+    toast({
+      title: "Conversation renamed",
+      description: "The conversation has been renamed",
+    });
+  }, [toast]);
+
   const value = {
     conversations,
     currentConversationId,
@@ -204,6 +224,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     selectConversation,
     addMessage,
     deleteConversation,
+    renameConversation,
     clearConversations,
     updateTheme,
   };
