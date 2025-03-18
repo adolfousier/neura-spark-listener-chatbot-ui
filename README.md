@@ -38,7 +38,7 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/neura-ai.git
+git clone https://github.com/adolfousier/neura-spark-listener-chatbot-ui
 cd neura-ai
 
 # Install dependencies
@@ -75,7 +75,7 @@ npm run dev
 yarn dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser to see the application.
+Open [http://localhost:8080](http://localhost:8080) in your browser to see the application.
 
 ### Building for Production
 
