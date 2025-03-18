@@ -1,0 +1,203 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 1rem;
+
+    /* Template 1: Minimal */
+    --template1: 220 14% 96%;
+    --template1-foreground: 220 70% 17%;
+
+    /* Template 2: Vibrant */
+    --template2: 262 83% 58%;
+    --template2-foreground: 0 0% 100%;
+
+    /* Template 3: Elegant */
+    --template3: 200 98% 39%;
+    --template3-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    /* Template 1: Minimal Dark */
+    --template1: 220 14% 10%;
+    --template1-foreground: 220 14% 96%;
+
+    /* Template 2: Vibrant Dark */
+    --template2: 262 50% 30%;
+    --template2-foreground: 0 0% 100%;
+
+    /* Template 3: Elegant Dark */
+    --template3: 200 70% 20%;
+    --template3-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+}
+
+/* Template specific base styles */
+.template-minimal {
+  --radius: 0.5rem;
+}
+
+.template-vibrant {
+  --radius: 1rem;
+  --primary: 262 83% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 262 83% 96%;
+  --secondary-foreground: 262 83% 28%;
+}
+
+.template-elegant {
+  --radius: 0.25rem;
+  --primary: 200 98% 39%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 200 98% 95%;
+  --secondary-foreground: 200 98% 20%;
+}
+
+.dark.template-minimal {
+  --radius: 0.5rem;
+}
+
+.dark.template-vibrant {
+  --radius: 1rem;
+  --primary: 262 50% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 262 50% 30%;
+  --secondary-foreground: 0 0% 100%;
+}
+
+.dark.template-elegant {
+  --radius: 0.25rem;
+  --primary: 200 70% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 200 70% 20%;
+  --secondary-foreground: 0 0% 100%;
+}
+
+@layer components {
+  /* Glass morphism styles */
+  .glass {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20;
+  }
+  
+  .dark .glass {
+    @apply bg-black/20 backdrop-blur-lg border border-white/10;
+  }
+  
+  /* Message container styles */
+  .message-container {
+    @apply rounded-lg p-4 mb-4 max-w-[85%] animate-fade-in;
+  }
+  
+  .user-message {
+    @apply bg-primary text-primary-foreground ml-auto;
+  }
+  
+  .ai-message {
+    @apply bg-secondary text-secondary-foreground mr-auto;
+  }
+  
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer utilities {
+  /* Fade-in animation */
+  .animated-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Typing animation for AI responses */
+  .typing-animation::after {
+    content: "|";
+    animation: blink 1s infinite;
+  }
+  
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+}
+
