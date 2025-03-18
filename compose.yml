@@ -1,0 +1,40 @@
+services:
+  neura_spark_listener:
+    build:
+      context: .
+      dockerfile: dockerfile
+    image: neura_spark_listener_v0.1.5
+    container_name: ${CONTAINER_NAME}
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      # CUSTOMER SPECIFIC APP SETTINGS
+      - DATABASE_URL$=${DATABASE_URL}
+
+      - VITE_GROQ_API_KEY=#{GROQ_API_KEY} 
+      - VITE_OPENAI_API_KEY=#{OPENAI_API_KEY}
+      - VITE_CLAUDE_API_KEY=${OPENAI_API_KEY}
+
+      # Optional with defaults
+      - VITE_BACKEND_SERVICE_PROVIDER=${BACKEND_SERVICE_PROVIDER}
+      - VITE_GROQ_API_MODEL=${GROQ_API_MODEL}
+      - VITE_STREAM_ENABLED=${STREAM_ENABLED}
+      - VITE_REASONING_FORMAT=${REASONING_FORMAT}
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./public:/app/public
+      #- ./prisma:/app/prisma
+      #- ./prisma/dev.db:/app/prisma/dev.db
+      - ./prisma/dev.db:/app/prisma/dev.db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "7"
+        compress: "true"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.8"
+          memory: 2G
+    restart: always
