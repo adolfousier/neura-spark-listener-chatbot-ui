@@ -29,12 +29,12 @@ We expect all contributors to follow our Code of Conduct. Please be respectful a
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/neura-ai.git
+   git clone https://github.com/adolfousier/neura-spark-listener-chatbot-ui
    cd neura-ai
    ```
 3. Add the original repository as an upstream remote:
    ```bash
-   git remote add upstream https://github.com/ORIGINAL-OWNER/neura-ai.git
+   git remote add upstream https://github.com/adolfousier/neura-spark-listener-chatbot-ui
    ```
 4. Install dependencies:
    ```bash
