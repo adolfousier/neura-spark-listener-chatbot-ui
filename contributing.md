@@ -1,6 +1,6 @@
-# Contributing to Neura AI Chatbot UI
+# Contributing to Neura Spark Listener Chatbot UI
 
-Thank you for your interest in contributing to Neura AI! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
 
