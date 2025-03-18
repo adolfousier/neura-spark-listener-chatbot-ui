@@ -9,6 +9,7 @@ type ChatContextType = {
   settings: Settings;
   isLoading: boolean;
   setSettings: (settings: Settings) => void;
+  setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
   createNewConversation: (initialMessage?: string) => string;
   selectConversation: (id: string) => void;
   addMessage: (role: 'user' | 'assistant' | 'system', content: string) => void;
@@ -198,6 +199,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     settings,
     isLoading,
     setSettings,
+    setConversations,
     createNewConversation,
     selectConversation,
     addMessage,

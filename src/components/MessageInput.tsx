@@ -11,7 +11,7 @@ import { ChatResponse } from "@/types";
 export function MessageInput() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addMessage, settings, conversations, currentConversationId } = useChat();
+  const { addMessage, settings, conversations, currentConversationId, setConversations } = useChat();
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -69,21 +69,33 @@ export function MessageInput() {
         // We'll replace the placeholder message with actual content as it streams in
         const stream = streamChatResponse(response);
         
+        // Get the current conversation to find the last message ID
+        const currentConv = conversations.find(conv => conv.id === currentConversationId);
+        if (!currentConv) return;
+        
+        // Get the ID of the "Thinking..." message we just added
+        const assistantMessageId = currentConv.messages[currentConv.messages.length - 1].id;
+        
+        // Stream the response and update the same message
         for await (const chunk of stream) {
           responseContent += chunk;
           
-          // Update the message with the current content
-          const currentMessages = conversations.find(
-            (conv) => conv.id === currentConversationId
-          )?.messages;
-          
-          if (currentMessages) {
-            const lastMessage = currentMessages[currentMessages.length - 1];
-            if (lastMessage && lastMessage.role === "assistant") {
-              // Replace the last message with the updated content
-              addMessage("assistant", responseContent);
-            }
-          }
+          // Update the existing message instead of creating a new one
+          setConversations(prev => 
+            prev.map(conv => 
+              conv.id === currentConversationId 
+                ? {
+                    ...conv,
+                    messages: conv.messages.map(msg => 
+                      msg.id === assistantMessageId
+                        ? { ...msg, content: responseContent }
+                        : msg
+                    ),
+                    updatedAt: new Date()
+                  } 
+                : conv
+            )
+          );
         }
       } else if (!settings.streamEnabled && !(response instanceof ReadableStream)) {
         // Handle non-streaming response
