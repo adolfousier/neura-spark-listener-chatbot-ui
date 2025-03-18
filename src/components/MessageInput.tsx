@@ -7,10 +7,12 @@ import { sendChatRequest, streamChatResponse } from "@/services/apiService";
 import { useToast } from "@/hooks/use-toast";
 import { SendHorizontal } from "lucide-react";
 import { ChatResponse } from "@/types";
+import { generateId } from "@/lib/utils";
 
 export function MessageInput() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isReasoning, setIsReasoning] = useState(false);
   const { addMessage, settings, conversations, currentConversationId, setConversations } = useChat();
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -37,6 +39,7 @@ export function MessageInput() {
     
     // Prepare for API call
     setIsSubmitting(true);
+    setIsReasoning(true);
     setMessage("");
     
     try {
@@ -55,39 +58,48 @@ export function MessageInput() {
         stream: settings.streamEnabled
       };
       
-      // Initial loading state
-      let responseContent = '';
-      addMessage("assistant", "Thinking...");
-      
       // Send request with proper typing
       const response = await sendChatRequest(settings.provider, chatRequest);
       
       if (settings.streamEnabled && response instanceof ReadableStream) {
         // Handle streaming response
-        responseContent = '';
+        let responseContent = '';
         
-        // We'll replace the placeholder message with actual content as it streams in
+        // Create a new assistant message
+        const assistantMessage = {
+          id: generateId(),
+          role: 'assistant' as const,
+          content: '',
+          createdAt: new Date()
+        };
+        
+        // Add the empty message that will be updated with streaming content
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConversationId 
+              ? {
+                  ...conv,
+                  messages: [...conv.messages, assistantMessage],
+                  updatedAt: new Date()
+                } 
+              : conv
+          )
+        );
+        
+        // Stream the response and update the message
         const stream = streamChatResponse(response);
         
-        // Get the current conversation to find the last message ID
-        const currentConv = conversations.find(conv => conv.id === currentConversationId);
-        if (!currentConv) return;
-        
-        // Get the ID of the "Thinking..." message we just added
-        const assistantMessageId = currentConv.messages[currentConv.messages.length - 1].id;
-        
-        // Stream the response and update the same message
         for await (const chunk of stream) {
           responseContent += chunk;
           
-          // Update the existing message instead of creating a new one
+          // Update the message with the current content
           setConversations(prev => 
             prev.map(conv => 
               conv.id === currentConversationId 
                 ? {
                     ...conv,
                     messages: conv.messages.map(msg => 
-                      msg.id === assistantMessageId
+                      msg.id === assistantMessage.id
                         ? { ...msg, content: responseContent }
                         : msg
                     ),
@@ -100,8 +112,9 @@ export function MessageInput() {
       } else if (!settings.streamEnabled && !(response instanceof ReadableStream)) {
         // Handle non-streaming response
         const nonStreamResponse = response as ChatResponse;
-        responseContent = nonStreamResponse.choices[0]?.message?.content || "No response from AI";
-        // Replace the placeholder with the full response
+        const responseContent = nonStreamResponse.choices[0]?.message?.content || "No response from AI";
+        
+        // Add the complete response as a new message
         addMessage("assistant", responseContent);
       }
     } catch (error) {
@@ -111,10 +124,12 @@ export function MessageInput() {
         description: error instanceof Error ? error.message : "Failed to send message",
         variant: "destructive",
       });
-      // Replace the placeholder with an error message
+      
+      // Add an error message
       addMessage("assistant", "Sorry, I encountered an error. Please try again.");
     } finally {
       setIsSubmitting(false);
+      setIsReasoning(false);
     }
   };
 
@@ -131,19 +146,27 @@ export function MessageInput() {
               handleSubmit(e);
             }
           }}
-          placeholder="Type your message..."
+          placeholder={isReasoning ? "AI is reasoning..." : "Type your message..."}
           className="pr-14 min-h-[60px] max-h-[200px] resize-none"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isReasoning}
         />
-        <Button 
-          type="submit" 
-          size="icon" 
-          className="absolute right-2" 
-          disabled={isSubmitting || !message.trim()}
-        >
-          <SendHorizontal className="h-5 w-5" />
-          <span className="sr-only">Send</span>
-        </Button>
+        {isReasoning ? (
+          <div className="absolute right-2 flex items-center justify-center">
+            <div className="h-8 w-8 flex items-center justify-center">
+              <div className="animate-pulse h-4 w-4 bg-primary rounded-full"></div>
+            </div>
+          </div>
+        ) : (
+          <Button 
+            type="submit" 
+            size="icon" 
+            className="absolute right-2" 
+            disabled={isSubmitting || isReasoning || !message.trim()}
+          >
+            <SendHorizontal className="h-5 w-5" />
+            <span className="sr-only">Send</span>
+          </Button>
+        )}
       </div>
       <div className="text-xs text-muted-foreground mt-2 text-center opacity-75">
         AI powered by {settings.provider.charAt(0).toUpperCase() + settings.provider.slice(1)} • Model: {settings.model}

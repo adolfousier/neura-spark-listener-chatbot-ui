@@ -60,7 +60,6 @@ export async function* streamChatResponse(
         break;
       }
       
-      // Handle different stream formats
       try {
         // For server-sent events format
         const chunk = decoder.decode(value, { stream: true });
@@ -70,11 +69,19 @@ export async function* streamChatResponse(
         
         for (const line of lines) {
           try {
+            // Handle Groq and other OpenAI-compatible APIs
             const trimmedLine = line.startsWith('data: ') ? line.slice(6) : line;
+            if (trimmedLine.trim() === '') continue;
+            
             const data = JSON.parse(trimmedLine);
             
+            // Check for content in delta (streaming format)
             if (data.choices && data.choices[0]?.delta?.content) {
               yield data.choices[0].delta.content;
+            }
+            // Also check for content in message (non-streaming format)
+            else if (data.choices && data.choices[0]?.message?.content) {
+              yield data.choices[0].message.content;
             }
           } catch (e) {
             // Skip invalid JSON lines
