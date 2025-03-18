@@ -23,7 +23,7 @@ export function formatDate(date: Date): string {
 
 export function getProviderFromEnv(): Provider {
   const provider = import.meta.env.VITE_BACKEND_SERVICE_PROVIDER?.toLowerCase() as Provider;
-  return provider === 'claude' || provider === 'openai' ? provider : 'groq';
+  return provider === 'claude' || provider === 'openai' || provider === 'flowise' ? provider : 'groq';
 }
 
 export function getDefaultSettings(): Settings {
@@ -55,6 +55,8 @@ export function getApiUrlForProvider(provider: Provider): string {
       return import.meta.env.VITE_CLAUDE_API_URL || 'https://api.anthropic.com/v1/messages';
     case 'openai':
       return import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
+    case 'flowise':
+      return import.meta.env.VITE_FLOWISE_API_URL || '';
     default:
       return 'https://api.groq.com/openai/v1/chat/completions';
   }
@@ -68,6 +70,8 @@ export function getApiKeyForProvider(provider: Provider): string {
       return import.meta.env.VITE_CLAUDE_API_KEY || '';
     case 'openai':
       return import.meta.env.VITE_OPENAI_API_KEY || '';
+    case 'flowise':
+      return import.meta.env.VITE_FLOWISE_API_KEY || '';
     default:
       return import.meta.env.VITE_GROQ_API_KEY || '';
   }

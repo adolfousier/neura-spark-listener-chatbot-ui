@@ -1,5 +1,5 @@
 
-export type Provider = 'groq' | 'claude' | 'openai';
+export type Provider = 'groq' | 'claude' | 'openai' | 'flowise';
 
 export type Template = 'minimal' | 'vibrant' | 'elegant';
 

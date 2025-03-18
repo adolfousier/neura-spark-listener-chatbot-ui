@@ -6,7 +6,7 @@ services:
     image: neura_spark_listener_v0.1.5
     container_name: ${CONTAINER_NAME}
     ports:
-      - "${PORT:-3000}:3000"
+      - "${VITE_PORT:-3000}:3000"
     environment:
       - VITE_GROQ_API_KEY=#{VITE_GROQ_API_KEY} 
       - VITE_OPENAI_API_KEY=#{VITE_OPENAI_API_KEY}

@@ -69,6 +69,7 @@ export function SettingsDialog() {
                 <SelectItem value="groq">Groq</SelectItem>
                 <SelectItem value="claude">Claude</SelectItem>
                 <SelectItem value="openai">OpenAI</SelectItem>
+                <SelectItem value="flowise">Flowise</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -107,6 +108,11 @@ export function SettingsDialog() {
                     <SelectItem value="gpt-4o">GPT-4o</SelectItem>
                     <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
                     <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                  </>
+                )}
+                {localSettings.provider === 'flowise' && (
+                  <>
+                    <SelectItem value="default">Default Chatflow</SelectItem>
                   </>
                 )}
               </SelectContent>
