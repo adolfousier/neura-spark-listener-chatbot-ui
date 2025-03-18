@@ -150,10 +150,11 @@ npm run format
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Contribuitions
-We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for more information. If you like this project, please consider giving us a star!
+We welcome contributions! Please see our [contributing guidelines](contributing.md) for more information. If you like this project, please consider giving us a star!
 
 ## Acknowledgments
 
 - This project uses [shadcn/ui](https://ui.shadcn.com/) for UI components
 - Built with [Vite](https://vitejs.dev/), [React](https://reactjs.org/), and [TypeScript](https://www.typescriptlang.org/)
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Database with [Prisma ORM]([Prisma ORM](prisma.io/)
