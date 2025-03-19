@@ -14,7 +14,7 @@ RUN apt-get update -y \
 COPY package*.json ./
 
 # Install dependencies with platform-specific settings to avoid Rollup issues
-RUN npm install --platform=linux --arch=x64 --no-optional
+RUN npm install 
 
 # Copy entire project
 COPY . .
@@ -23,7 +23,7 @@ COPY . .
 RUN npx prisma generate
 
 # Build the application with NODE_OPTIONS to avoid optional dependency issues
-RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
+RUN npm run build
 
 # Expose port
 EXPOSE 3000
