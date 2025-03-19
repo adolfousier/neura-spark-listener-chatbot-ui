@@ -19,6 +19,7 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 ## Features
 
 - **Switch Easily Multiple AI Providers**: Seamlessly switch between Groq, Neura, Claude, Flowise, OpenRouter or OpenAI
+- **Customized System Prompts**: Define system prompts to guide the AI's behavior
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
 - **Dark/Light Mode**: Each template has both light and dark variants
 - **Conversation Management**: Save, browse, and manage multiple chat conversations
@@ -26,6 +27,7 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 - **Message Streaming**: Real-time message streaming for a responsive chat experience
 - **Responsive Design**: Works smoothly on desktop and mobile devices
 - **Customizable Settings**: Adjust parameters like temperature, model selection, and more
+- **Auto-fit Input**: The chat input field automatically expands as you type, providing a comfortable writing experience while maintaining a clean interface.
 
 ## Comming Soon
 - Messages Token Counter: Displays the number of tokens used in each message.
