@@ -67,6 +67,7 @@ export function SettingsDialog() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="groq">Groq</SelectItem>
+                <SelectItem value="neura">Neura Router</SelectItem>
                 <SelectItem value="claude">Claude</SelectItem>
                 <SelectItem value="openai">OpenAI</SelectItem>
                 <SelectItem value="openrouter">OpenRouter</SelectItem>
@@ -95,6 +96,19 @@ export function SettingsDialog() {
                     <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B</SelectItem>
                     <SelectItem value="llama-3-8b-fast">Llama 3 8B Fast</SelectItem>
                     <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B</SelectItem>
+                  </>
+                )}
+                {/* Add Neura models here */}
+                {localSettings.provider === 'neura' && (
+                  <>
+                    <SelectItem value="allam-2-7b">Allam 2.7B</SelectItem>
+                    <SelectItem value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill Llama 70B</SelectItem>
+                    <SelectItem value="deepseek-r1-distill-llama-70b-specdec">DeepSeek R1 Distill Llama 70B (SpecDec)</SelectItem>
+                    <SelectItem value="deepseek-r1-distill-qwen-32b">DeepSeek R1 Distill Qwen 32B</SelectItem>
+                    <SelectItem value="gemma2-9b-it">Gemini 2.0 Flash</SelectItem>
+                    <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant</SelectItem>
+                    <SelectItem value="llama-3.3-70b-specdec">Llama 3.3 70B SpecDec</SelectItem>
+                    <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</SelectItem>
                   </>
                 )}
                 {localSettings.provider === 'claude' && (

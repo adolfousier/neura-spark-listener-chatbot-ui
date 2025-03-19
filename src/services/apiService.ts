@@ -22,6 +22,8 @@ export async function sendChatRequest(
 
   if (provider === 'flowise') {
     return sendFlowiseRequest(apiUrl, apiKey, chatRequest);
+  } else if (provider === 'neura') {
+      return sendNeuraRequest(apiUrl, apiKey, chatRequest);
   } else if (provider === 'claude') {
     return sendClaudeRequest(apiUrl, apiKey, chatRequest);
   } else if (provider === 'openrouter') {
@@ -193,6 +195,9 @@ async function sendOpenAICompatibleRequest(
   }
 }
 
+/**
+ * Send a request to Flowise API
+ */
 async function sendFlowiseRequest(
   apiUrl: string,
   apiKey: string,
@@ -330,6 +335,70 @@ async function sendFlowiseRequest(
   }
 }
 
+/**
+ * Send a request to Neura API
+ */
+export async function sendNeuraRequest(
+  apiUrl: string,
+  apiKey: string,
+  chatRequest: ChatRequest
+): Promise<ChatResponse | ReadableStream<Uint8Array>> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,
+  };
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        messages: chatRequest.messages.map((msg) => ({
+          role: msg.role === 'system' ? 'user' : msg.role,
+          content: msg.content,
+        })),
+        model: chatRequest.model || 'neura-default',
+        temperature: chatRequest.temperature,
+        stream: chatRequest.stream,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Neura API request failed with status ${response.status}: ${response.statusText}`
+      );
+    }
+
+    if (chatRequest.stream) {
+      // Create a ReadableStream that processes chunks as they arrive
+      return new ReadableStream({
+        async start(controller) {
+          const reader = response.body.getReader();
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              break;
+            }
+
+            // Enqueue the Uint8Array chunk directly
+            controller.enqueue(value);
+          }
+
+          // Signal that the stream is complete
+          controller.close();
+        },
+      });
+    } else {
+      const data = await response.json();
+      return data as ChatResponse;
+    }
+  } catch (error) {
+    console.error('Error in Neura API request:', error);
+    throw error;
+  }
+}
+
 export async function* streamChatResponse(
   stream: ReadableStream<Uint8Array>
 ): AsyncGenerator<string, void, unknown> {
@@ -345,22 +414,21 @@ export async function* streamChatResponse(
       }
       
       try {
-        // For server-sent events format
         const chunk = decoder.decode(value, { stream: true });
         const lines = chunk
           .split('\n')
-          .filter((line) => line.trim() !== '' && line.trim() !== 'data: [DONE]');
+          .filter((line) => line.trim() !== '');
         
         for (const line of lines) {
           try {
             // Skip ping events
             if (line.includes('event: ping')) continue;
             
+            // Skip [DONE] markers (from any provider)
+            if (line.includes('[DONE]')) continue;
+            
             // Handle Claude API specific events
-            if (line.startsWith('event:')) {
-              // We're only interested in content_block_delta events for text
-              continue;
-            }
+            if (line.startsWith('event:')) continue;
             
             // Extract the data part
             if (!line.startsWith('data:')) continue;
@@ -370,15 +438,19 @@ export async function* streamChatResponse(
             
             const data = JSON.parse(trimmedLine);
             
-            // Handle Claude API specific data formats
-            if (data.type === 'content_block_delta' && data.delta?.type === 'text_delta') {
+            // Handle Neura format
+            if (data.chunk !== undefined) {
+              yield data.chunk;
+            }
+            // Handle Claude API format
+            else if (data.type === 'content_block_delta' && data.delta?.type === 'text_delta') {
               yield data.delta.text;
             }
-            // Handle OpenAI-compatible APIs
+            // Handle OpenAI format
             else if (data.choices && data.choices[0]?.delta?.content) {
               yield data.choices[0].delta.content;
             }
-            // Also check for content in message (non-streaming format)
+            // Handle non-streaming format
             else if (data.choices && data.choices[0]?.message?.content) {
               yield data.choices[0].message.content;
             }

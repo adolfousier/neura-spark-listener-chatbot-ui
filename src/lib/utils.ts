@@ -23,7 +23,7 @@ export function formatDate(date: Date): string {
 
 export function getProviderFromEnv(): Provider {
   const provider = import.meta.env.VITE_BACKEND_SERVICE_PROVIDER?.toLowerCase() as Provider;
-  return provider === 'claude' || provider === 'openai' || provider === 'flowise' ? provider : 'groq';
+  return ['claude', 'openai', 'flowise', 'openrouter', 'neura'].includes(provider) ? provider : 'groq';
 }
 
 export function getDefaultSettings(): Settings {
@@ -60,7 +60,9 @@ export function getApiUrlForProvider(provider: Provider): string {
       return import.meta.env.VITE_OPENROUTER_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
     case 'flowise':
       return import.meta.env.VITE_FLOWISE_API_URL || 'http://localhost:3000/api/v1/prediction';
-    default:
+      case 'neura':
+        return import.meta.env.VITE_NEURA_ROUTER_API_URL || 'https://api.meetneura.ai/v1/chat/completions/router';    
+      default:
       return 'https://api.groq.com/openai/v1/chat/completions';
   }
 }
@@ -77,7 +79,9 @@ export function getApiKeyForProvider(provider: Provider): string {
       return import.meta.env.VITE_OPENROUTER_API_KEY || '';
     case 'flowise':
       return import.meta.env.VITE_FLOWISE_API_KEY || '';
-    default:
+      case 'neura':
+        return import.meta.env.VITE_NEURA_ROUTER_API_KEY || '';      
+      default:
       return import.meta.env.VITE_GROQ_API_KEY || '';
   }
 }

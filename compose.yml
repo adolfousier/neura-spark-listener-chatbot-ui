@@ -8,14 +8,12 @@ services:
     ports:
       - "${VITE_PORT}:4173"
     environment:
-      # Openai service settings
-      - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
-      
-      # Claude service settings
-      - VITE_CLAUDE_API_KEY=${VITE_CLAUDE_API_KEY}
-
-      # Optional backend with defaults
+      # Optional backend with defaults (Neura/Groq/OpenRouter/Flowise/Openai/Claude)
       - VITE_BACKEND_SERVICE_PROVIDER=${VITE_BACKEND_SERVICE_PROVIDER}
+
+      # Neura service settings
+      - VITE_NEURA_ROUTER_API_KEY=${VITE_NEURA_ROUTER_API_KEY}
+      - VITE_NEURA_ROUTER_API_URL=${VITE_NEURA_ROUTER_API_URL}
 
       # Groq service settings
       - VITE_GROQ_API_KEY=${VITE_GROQ_API_KEY}
@@ -36,6 +34,12 @@ services:
       - VITE_OPENROUTER_API_URL=${VITE_OPENROUTER_API_URL}
       - VITE_OPENROUTER_HTTP_REFERER=${VITE_OPENROUTER_HTTP_REFERER}
       - VITE_OPENROUTER_X_TITLE=${VITE_OPENROUTER_X_TITLE}
+
+      # Openai service settings
+      - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
+      
+      # Claude service settings
+      - VITE_CLAUDE_API_KEY=${VITE_CLAUDE_API_KEY}
 
     volumes:
       - ./public:/app/public
