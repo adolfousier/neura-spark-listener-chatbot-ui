@@ -29,7 +29,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Expose port
-EXPOSE 3000
+EXPOSE 4173
 
 # Initialize database and start the application
 CMD npx prisma db push && npm run preview
