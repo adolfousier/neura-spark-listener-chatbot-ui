@@ -1,6 +1,9 @@
 
 import { getApiKeyForProvider, getApiUrlForProvider, generateId } from "@/lib/utils";
 import { ChatRequest, ChatResponse, ChatStreamResponse, Provider } from "@/types";
+import { FlowiseClient } from 'flowise-sdk';
+// Import the MessageType type from flowise-sdk
+type MessageType = 'apiMessage' | 'userMessage';
 
 export async function sendChatRequest(
   provider: Provider, 
@@ -59,17 +62,21 @@ async function sendFlowiseRequest(
     throw new Error('Flowise API URL is not set. Please check your environment variables.');
   }
 
-  // Extract the chatflow ID from the URL or environment
-  // The URL format should be: https://your-flowise-instance/api/v1/prediction/{chatflowId}
+  // Extract the chatflow ID from the environment
   const chatflowId = import.meta.env.VITE_FLOWISE_CHATFLOW_ID || '';
   if (!chatflowId) {
     throw new Error('Flowise Chatflow ID is not set. Please check your environment variables.');
   }
 
-  // Ensure the URL is properly formatted
-  // Remove trailing slashes from the API URL
-  const cleanApiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
-  const fullUrl = `${cleanApiUrl}/prediction/${chatflowId}`;
+  // Initialize the Flowise SDK client with the base URL
+  // Extract the base URL without the /api/v1/prediction/ path
+  // This prevents path duplication when the SDK appends its own paths
+  const baseUrl = apiUrl.replace(/\/api\/v1\/prediction\/?$/, '');
+  
+  const client = new FlowiseClient({
+    baseUrl: baseUrl,
+    apiKey: apiKey || undefined
+  });
 
   // Convert the ChatRequest format to Flowise format
   const lastUserMessage = chatRequest.messages.filter(msg => msg.role === 'user').pop();
@@ -81,98 +88,79 @@ async function sendFlowiseRequest(
   const history = chatRequest.messages
     .filter(msg => msg.role !== 'system' && !(msg.role === 'user' && msg.content === lastUserMessage.content))
     .map(msg => ({
-      role: msg.role === 'assistant' ? 'apiMessage' : 'userMessage',
+      message: msg.content,
+      type: msg.role === 'assistant' ? ('apiMessage' as MessageType) : ('userMessage' as MessageType),
+      role: msg.role === 'assistant' ? ('apiMessage' as MessageType) : ('userMessage' as MessageType),
       content: msg.content
     }));
 
-  const flowiseRequest: FlowiseRequest = {
-    question: lastUserMessage.content,
-    history: history.length > 0 ? history : undefined,
-    overrideConfig: {
-      temperature: chatRequest.temperature
-    }
-    // Note: uploads field is not implemented yet, but could be added in the future
-  };
-
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-
-  if (apiKey) {
-    headers['Authorization'] = `Bearer ${apiKey}`;
-  }
-
   try {
-    const response = await fetch(fullUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(flowiseRequest),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(
-        `Flowise API request failed with status ${response.status}: ${
-          errorData?.error || response.statusText
-        }`
-      );
-    }
-
     if (chatRequest.stream) {
-      // Flowise doesn't support streaming in the same way as OpenAI-compatible APIs
-      // We'll need to adapt the response to match the expected format
-      const data = await response.json();
-      
-      // Create a synthetic stream from the response
+      // Handle streaming response using the SDK
       const encoder = new TextEncoder();
       const stream = new ReadableStream({
-        start(controller) {
-          // Extract the content from the Flowise response
-          // Flowise can return data in different formats, so we need to handle all possibilities
-          let content = '';
-          if (typeof data === 'string') {
-            content = data;
-          } else if (data.text) {
-            content = data.text;
-          } else if (data.result) {
-            content = data.result;
-          } else if (data.json) {
-            content = JSON.stringify(data.json);
-          }
-          
-          // Format the response to match OpenAI format for streaming
-          const chunk = JSON.stringify({
-            choices: [
-              {
-                index: 0,
-                delta: { content },
-                finish_reason: null
+        async start(controller) {
+          try {
+            const prediction = await client.createPrediction({
+              chatflowId: chatflowId,
+              question: lastUserMessage.content,
+              history: history.length > 0 ? history : undefined,
+              overrideConfig: {
+                temperature: chatRequest.temperature
+              },
+              streaming: true
+            }) as AsyncGenerator<{event: string, data: string}, void, unknown>;
+
+            for await (const chunk of prediction) {
+              // The SDK returns events in the format {event: "token", data: "content"}
+              if (chunk.event === 'token' && chunk.data) {
+                // Format the response to match OpenAI format for streaming
+                const formattedChunk = JSON.stringify({
+                  choices: [
+                    {
+                      index: 0,
+                      delta: { content: chunk.data },
+                      finish_reason: null
+                    }
+                  ]
+                });
+                
+                controller.enqueue(encoder.encode(`data: ${formattedChunk}\n\n`));
               }
-            ]
-          });
-          
-          controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-          controller.close();
+            }
+            
+            // Signal the end of the stream
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          } catch (error) {
+            console.error('Error in Flowise streaming:', error);
+            controller.error(error);
+          }
         }
       });
       
       return stream;
     } else {
-      // Handle non-streaming response for Flowise
-      const data = await response.json();
+      // Handle non-streaming response using the SDK
+      const response = await client.createPrediction({
+        chatflowId: chatflowId,
+        question: lastUserMessage.content,
+        history: history.length > 0 ? history : undefined,
+        overrideConfig: {
+          temperature: chatRequest.temperature
+        }
+      });
       
-      // Extract the content from the Flowise response
-      // Flowise can return data in different formats, so we need to handle all possibilities
+      // Extract the content from the response
       let content = '';
-      if (typeof data === 'string') {
-        content = data;
-      } else if (data.text) {
-        content = data.text;
-      } else if (data.result) {
-        content = data.result;
-      } else if (data.json) {
-        content = JSON.stringify(data.json);
+      if (typeof response === 'string') {
+        content = response;
+      } else if (response.text) {
+        content = response.text;
+      } else if (response.result) {
+        content = response.result;
+      } else if (response.json) {
+        content = JSON.stringify(response.json);
       }
       
       // Format the response to match OpenAI format
@@ -192,6 +180,12 @@ async function sendFlowiseRequest(
     }
   } catch (error) {
     console.error('Error in Flowise API request:', error);
+    
+    // Check if the error response contains HTML (indicating we hit the UI instead of API)
+    if (error.message && (error.message.includes('<!DOCTYPE html>') || error.message.includes('<html'))) {
+      throw new Error('Received HTML instead of JSON. Make sure your Flowise API URL points to the API endpoint, not the UI. The URL should be in format "https://bots.meetneura.ai/api/v1/prediction/" without including the chatflow ID.');
+    }
+    
     throw error;
   }
 }
@@ -247,8 +241,4 @@ export async function* streamChatResponse(
   }
 }
 
-interface FlowiseRequest {
-  question: string;
-  history?: { role: string; content: string }[];
-  overrideConfig?: Record<string, any>;
-}
+// The FlowiseRequest interface is no longer needed as we're using the SDK's types

@@ -90,17 +90,17 @@ export function SettingsDialog() {
               <SelectContent>
                 {localSettings.provider === 'groq' && (
                   <>
-                    <SelectItem value="deepseek-r1-distill-llama-70b">Deepseek Coder</SelectItem>
-                    <SelectItem value="llama-3.1-70b-versatile">Llama 3.1 70B</SelectItem>
+                    <SelectItem value="deepseek-r1-distill-llama-70b">Deepseek R1 Distill</SelectItem>
+                    <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B</SelectItem>
                     <SelectItem value="llama-3-8b-fast">Llama 3 8B Fast</SelectItem>
                     <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B</SelectItem>
                   </>
                 )}
                 {localSettings.provider === 'claude' && (
                   <>
-                    <SelectItem value="claude-3-opus-20240229">Claude 3 Opus</SelectItem>
-                    <SelectItem value="claude-3-sonnet-20240229">Claude 3 Sonnet</SelectItem>
-                    <SelectItem value="claude-3-haiku-20240307">Claude 3 Haiku</SelectItem>
+                    <SelectItem value="claude-3.5-opus-20240229">Claude 3.5 Opus</SelectItem>
+                    <SelectItem value="claude-3.7-sonnet">Claude 3.7 Sonnet</SelectItem>
+                    <SelectItem value="claude-3.5-haiku-20240307">Claude 3.5 Haiku</SelectItem>
                   </>
                 )}
                 {localSettings.provider === 'openai' && (

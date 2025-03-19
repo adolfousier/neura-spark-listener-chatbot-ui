@@ -27,4 +27,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Initialize database and start the application
-CMD npx prisma db push && npm start
+CMD npx prisma db push && npm run preview
