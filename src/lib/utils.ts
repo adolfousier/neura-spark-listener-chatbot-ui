@@ -35,6 +35,7 @@ export function getDefaultSettings(): Settings {
     reasoningFormat: import.meta.env.VITE_REASONING_FORMAT || 'parsed',
     template: 'minimal',
     darkMode: false,
+    systemPrompt: import.meta.env.VITE_DEFAULT_SYSTEM_PROMPT || '',
   };
 }
 

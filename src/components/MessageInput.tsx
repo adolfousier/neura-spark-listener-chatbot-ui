@@ -43,13 +43,25 @@ export function MessageInput() {
     setMessage("");
     
     try {
-      const messages = [
+      // Prepare messages array with system prompt if available
+      const messages = [];
+      
+      // Add system prompt if it exists
+      if (settings.systemPrompt && settings.systemPrompt.trim() !== '') {
+        messages.push({ role: "system", content: settings.systemPrompt });
+      }
+      
+      // Add conversation history
+      messages.push(
         ...(currentConversation?.messages.map(m => ({
           role: m.role,
           content: m.content
-        })) || []),
-        { role: "user", content: message }
-      ];
+        })) || [])
+      );
+      
+      // Add current user message
+      messages.push({ role: "user", content: message });
+
       
       const chatRequest = {
         messages,

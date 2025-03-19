@@ -26,6 +26,7 @@ export type Settings = {
   reasoningFormat: string;
   template: Template;
   darkMode: boolean;
+  systemPrompt: string;
 };
 
 export type ChatRequest = {

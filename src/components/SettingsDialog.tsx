@@ -21,6 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { useChat } from "@/context/ChatContext";
 import { Provider, Template } from "@/types";
 import { getTemplateClass } from "@/lib/utils";
@@ -215,6 +216,26 @@ export function SettingsDialog() {
               <Label htmlFor="dark-mode">
                 {localSettings.darkMode ? "Enabled" : "Disabled"}
               </Label>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label htmlFor="system-prompt" className="text-right pt-2">
+              System Prompt
+            </Label>
+            <div className="col-span-3">
+              <Textarea
+                id="system-prompt"
+                placeholder="Enter a system prompt for the AI..."
+                className="min-h-[100px] resize-y"
+                value={localSettings.systemPrompt}
+                onChange={(e) =>
+                  setLocalSettings({ ...localSettings, systemPrompt: e.target.value })
+                }
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Define instructions for the AI to follow in all conversations
+              </p>
             </div>
           </div>
         </div>
