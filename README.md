@@ -37,7 +37,6 @@ Attachment Preview: Shows thumbnails for uploaded images and file information fo
 - File Size Limits: Enforces configurable size limits based on Flowise settings.
 Drag-and-Drop Functionality: Supports drag-and-drop for uploading files and images.
 - AI Message Copying: Users can easily copy AI-generated or user messages.
-- Auto-fit Input: The chat input field automatically expands as you type, providing a comfortable writing experience while maintaining a clean interface.
 - Boxed/Full Screen Mode: Allows users to switch between a boxed chat interface and a fullscreen experience.
 - Personalized Welcome Message: Allows defining a personalized welcome message to greet users upon entering the chat.
 Visual Feedback: Displays loading animations and progress indicators during operations.
