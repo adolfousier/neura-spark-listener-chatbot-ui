@@ -18,7 +18,7 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 
 ## Features
 
-- **Switch Easily Multiple AI Providers**: Seamlessly switch between Groq, Claude, Flowise or OpenAI
+- **Switch Easily Multiple AI Providers**: Seamlessly switch between Groq, Claude, Flowise OpenRouter or OpenAI
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
 - **Dark/Light Mode**: Each template has both light and dark variants
 - **Conversation Management**: Save, browse, and manage multiple chat conversations
@@ -57,6 +57,7 @@ VITE_GROQ_API_KEY=your_groq_api_key
 VITE_OPENAI_API_KEY=your_openai_api_key
 VITE_CLAUDE_API_KEY=your_claude_api_key
 VITE_FLOWISE_API_KEY=your_flowise_api_key
+VITE_OPENROUTER_API_KEY=your_openrouter_api_key
 
 # Database configuration
 DATABASE_URL="file:./dev.db"  # SQLite database path

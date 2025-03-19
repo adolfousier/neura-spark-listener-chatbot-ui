@@ -56,6 +56,8 @@ export function getApiUrlForProvider(provider: Provider): string {
       return import.meta.env.VITE_CLAUDE_API_URL || '/api/claude-proxy';
     case 'openai':
       return import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
+    case 'openrouter':
+      return import.meta.env.VITE_OPENROUTER_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
     case 'flowise':
       return import.meta.env.VITE_FLOWISE_API_URL || 'http://localhost:3000/api/v1/prediction';
     default:
@@ -71,6 +73,8 @@ export function getApiKeyForProvider(provider: Provider): string {
       return import.meta.env.VITE_CLAUDE_API_KEY || '';
     case 'openai':
       return import.meta.env.VITE_OPENAI_API_KEY || '';
+    case 'openrouter':
+      return import.meta.env.VITE_OPENROUTER_API_KEY || '';
     case 'flowise':
       return import.meta.env.VITE_FLOWISE_API_KEY || '';
     default:

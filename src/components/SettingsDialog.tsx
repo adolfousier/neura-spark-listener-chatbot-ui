@@ -69,6 +69,7 @@ export function SettingsDialog() {
                 <SelectItem value="groq">Groq</SelectItem>
                 <SelectItem value="claude">Claude</SelectItem>
                 <SelectItem value="openai">OpenAI</SelectItem>
+                <SelectItem value="openrouter">OpenRouter</SelectItem>
                 <SelectItem value="flowise">Flowise</SelectItem>
               </SelectContent>
             </Select>
@@ -108,6 +109,15 @@ export function SettingsDialog() {
                     <SelectItem value="gpt-4o">GPT-4o</SelectItem>
                     <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
                     <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                  </>
+                )}
+                {localSettings.provider === 'openrouter' && (
+                  <>
+                    <SelectItem value="openai/o3-mini">OpenAI o3-mini</SelectItem>
+                    <SelectItem value="anthropic/claude-3.7-sonnet">Claude 3.7 Sonnet</SelectItem>
+                    <SelectItem value="meta-llama/llama-3-70b-instruct">Llama 3 70B</SelectItem>
+                    <SelectItem value="google/gemini-2.0-flash-001">Gemini 2.0 Flash</SelectItem>
+                    <SelectItem value="mistralai/mistral-large-2411">Mistral Large 2411</SelectItem>
                   </>
                 )}
                 {localSettings.provider === 'flowise' && (
