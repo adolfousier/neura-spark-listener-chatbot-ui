@@ -1,11 +1,10 @@
-FROM node:20-slim
+FROM node:16-jessie
 
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update -y \
     && apt-get install -y \
-        openssl \
         build-essential \
         libssl-dev \
         ca-certificates
@@ -14,7 +13,7 @@ RUN apt-get update -y \
 COPY package*.json ./
 
 # Install dependencies with platform-specific settings to avoid Rollup issues
-RUN npm install 
+RUN npm install
 
 # Copy entire project
 COPY . .
@@ -23,7 +22,7 @@ COPY . .
 RUN npx prisma generate
 
 # Build the application with NODE_OPTIONS to avoid optional dependency issues
-RUN npm run build
+RUN NODE_ENV=production npm run build
 
 # Expose port
 EXPOSE 3000
