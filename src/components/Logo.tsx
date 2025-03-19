@@ -15,9 +15,7 @@ export function Logo({ className, size = "md" }: LogoProps) {
 
   return (
     <div className={cn("relative rounded-full overflow-hidden", sizeClasses[size], className)}>
-      <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-80 rounded-full" />
-      <div className="absolute inset-0 bg-background/5 backdrop-blur-sm rounded-full" />
-      <div className="absolute inset-0 flex items-center justify-center text-primary-foreground font-bold text-xl">N</div>
+      <img src="/title-avatar.png" alt="Logo" className="w-full h-full object-cover" />
     </div>
   );
 }

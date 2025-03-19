@@ -4,7 +4,7 @@ import { Conversation, Message as MessageType } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, formatDate } from "@/lib/utils";
-import { Bot, User } from "lucide-react";
+
 
 interface MessageListProps {
   conversation: Conversation;
@@ -52,8 +52,7 @@ function Message({ message }: MessageProps) {
       {!isUser && (
         <Avatar>
           <AvatarFallback>AI</AvatarFallback>
-          <AvatarImage src="" />
-          <Bot className="h-5 w-5 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-muted-foreground" />
+          <AvatarImage src="/assistant-avatar.png" />
         </Avatar>
       )}
       
@@ -76,8 +75,7 @@ function Message({ message }: MessageProps) {
       {isUser && (
         <Avatar>
           <AvatarFallback>You</AvatarFallback>
-          <AvatarImage src="" />
-          <User className="h-5 w-5 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-muted-foreground" />
+          <AvatarImage src="/user-avatar.png" />
         </Avatar>
       )}
     </div>
