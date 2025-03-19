@@ -16,15 +16,22 @@ export default defineConfig(({ mode }) => ({
         rewrite: (path) => '/v1/messages',
         configure: (proxy, _options) => {
           proxy.on('proxyReq', (proxyReq, req, _res) => {
-            // Read the request body to extract the API key
-            let body = '';
-            req.on('data', (chunk) => {
-              body += chunk;
+            // We need to completely buffer the request body before we can modify it
+            let bodyChunks: Buffer[] = [];
+            let bodyLength = 0;
+            
+            req.on('data', (chunk: Buffer) => {
+              bodyChunks.push(chunk);
+              bodyLength += chunk.length;
             });
             
             req.on('end', () => {
               try {
+                // Concatenate all chunks to get the complete body
+                const bodyBuffer = Buffer.concat(bodyChunks, bodyLength);
+                const body = bodyBuffer.toString();
                 const data = JSON.parse(body);
+                
                 // Set the Anthropic API key in the headers
                 if (data.apiKey) {
                   proxyReq.setHeader('x-api-key', data.apiKey);
@@ -34,11 +41,18 @@ export default defineConfig(({ mode }) => ({
                   delete data.apiKey;
                   delete data.anthropicVersion;
                   
-                  // Update the body
+                  // Create a new body with the modified data
                   const newBody = JSON.stringify(data);
+                  
+                  // Update content length and write the new body
                   proxyReq.setHeader('Content-Length', Buffer.byteLength(newBody));
+                  // End the request with the new body
                   proxyReq.write(newBody);
                   proxyReq.end();
+                } else {
+                  console.error('No API key found in request body');
+                  // If no API key, just end the request with original body
+                  proxyReq.end(bodyBuffer);
                 }
               } catch (error) {
                 console.error('Error processing proxy request:', error);
