@@ -15,12 +15,10 @@ RUN rm -rf node_modules
 # Install Rollup dependency explicitly first
 RUN npm install --save-dev @rollup/rollup-linux-x64-gnu
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm install 
-
 # Copy entire project
 COPY . .
+
+RUN npm install 
 
 # First Time - Generate Prisma Client
 RUN npx prisma generate
