@@ -27,6 +27,24 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 - **Responsive Design**: Works smoothly on desktop and mobile devices
 - **Customizable Settings**: Adjust parameters like temperature, model selection, and more
 
+## Comming Soon
+- Messages Token Counter: Displays the number of tokens used in each message.
+- Follow-up Prompts: Suggest follow-up questions to enhance user engagement.
+- File Upload Support: Upload and process various file types including TXT, PDF, DOC, DOCX, CSV, JSON, and XML.
+- Image Upload Support: Upload and process image files with preview functionality.
+- Image Display: The chatbot can display images received in the conversation.
+Attachment Preview: Shows thumbnails for uploaded images and file information for documents.
+- File Size Limits: Enforces configurable size limits based on Flowise settings.
+Drag-and-Drop Functionality: Supports drag-and-drop for uploading files and images.
+- AI Message Copying: Users can easily copy AI-generated or user messages.
+- Auto-fit Input: The chat input field automatically expands as you type, providing a comfortable writing experience while maintaining a clean interface.
+- Boxed/Full Screen Mode: Allows users to switch between a boxed chat interface and a fullscreen experience.
+- Personalized Welcome Message: Allows defining a personalized welcome message to greet users upon entering the chat.
+Visual Feedback: Displays loading animations and progress indicators during operations.
+- Markdown Support: Responses are displayed with Markdown formatting to improve readability and presentation.
+Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
+
+
 ## Getting Started
 
 ### Prerequisites
