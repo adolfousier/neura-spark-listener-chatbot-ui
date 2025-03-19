@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-import { Plugin } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -28,7 +27,6 @@ export default defineConfig(({ mode }) => ({
               proxyReq.setHeader('anthropic-dangerous-direct-browser-access', 'true');
             }
           });
-          return [proxy, options];
         }
       }
     }
@@ -42,4 +40,13 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  preview: {
+    host: "::",
+    port: 4173,
+    allowedHosts: [
+      "localhost",
+      "127.0.0.1",
+      "opensource-ai-chatbot.meetneura.ai"
+    ]
+  }
 }));
