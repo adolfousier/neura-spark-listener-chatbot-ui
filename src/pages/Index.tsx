@@ -84,7 +84,8 @@ export default function Index() {
       </main>
       
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-        <p>NEURA AI ASSISTANT • Powered by modern technology</p>
+        <p>Neura Spark Listener Open-Source Chatbot • Powered by{" "}<a href="https://meetneura.ai" target="_blank" rel="noopener noreferrer">Neura AI</a>
+        </p>
       </footer>
     </div>
   );
