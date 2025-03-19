@@ -8,10 +8,10 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 ## App Preview
 
 ### Home Page
-![Home Page View](/og.png)
+![Home Page View](./public/og.png)
 
 ### Desktop Chat View
-![Desktop Chat View](/og-image.png)
+![Desktop Chat View](./public/og-image.png)
 
 ### Mobile Chat View
 ![Mobile Chat View](https://neuraai.blob.core.windows.net/uploads/neura-spark-chatbot-preview-mobile.png)
