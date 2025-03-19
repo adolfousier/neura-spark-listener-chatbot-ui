@@ -1,4 +1,4 @@
-FROM node:16-jessie
+FROM node:18-buster
 
 WORKDIR /app
 
@@ -9,11 +9,15 @@ RUN apt-get update -y \
         libssl-dev \
         ca-certificates
 
+# Remove existing node_modules to avoid conflicts
+RUN rm -rf node_modules
+
+# Install Rollup dependency explicitly first
+RUN npm install --save-dev @rollup/rollup-linux-x64-gnu
+
 # Copy package files and install dependencies
 COPY package*.json ./
-
-# Install dependencies with platform-specific settings to avoid Rollup issues
-RUN npm install
+RUN npm install 
 
 # Copy entire project
 COPY . .
@@ -21,8 +25,8 @@ COPY . .
 # First Time - Generate Prisma Client
 RUN npx prisma generate
 
-# Build the application with NODE_OPTIONS to avoid optional dependency issues
-RUN NODE_ENV=production npm run build
+# Build the application
+RUN npm run build
 
 # Expose port
 EXPOSE 3000

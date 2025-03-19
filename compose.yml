@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    image: neura_spark_listener_v0.1.7
+    image: chabot_v0.1.7
     container_name: ${CONTAINER_NAME}
     ports:
       - "${VITE_PORT:-3000}:3000"

@@ -1,0 +1,18 @@
+# Specifying exceptions. If you want to exclude a specific file from the list of files specified with .dockerignore, use the ! exception character. 
+# The following is an example where files with .md extension are not included in the Docker image, but only README.md is included.
+# *.md
+# !README.md
+
+# Using wildcards, etc.
+# By using wildcards in the description, you can specify a target file regardless of which directory it is in. The following is an example of specifying a file named target in any directory one level below the build context root.
+*/logs
+/target
+*.env
+src/data/env
+Cargo.lock
+src/data/logs
+.env*
+# On the other hand, if you want to specify a specific file name, not just a file hierarchy, use **.
+# **/target
+
+
