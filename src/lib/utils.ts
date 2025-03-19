@@ -52,11 +52,12 @@ export function getApiUrlForProvider(provider: Provider): string {
     case 'groq':
       return import.meta.env.VITE_GROQ_API_URL || 'https://api.groq.com/openai/v1/chat/completions';
     case 'claude':
-      return import.meta.env.VITE_CLAUDE_API_URL || 'https://api.anthropic.com/v1/messages';
+      // Use the proxy URL for Claude API requests
+      return import.meta.env.VITE_CLAUDE_API_URL || '/api/claude-proxy';
     case 'openai':
       return import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
     case 'flowise':
-      return import.meta.env.VITE_FLOWISE_API_URL || '';
+      return import.meta.env.VITE_FLOWISE_API_URL || 'http://localhost:3000/api/v1/prediction';
     default:
       return 'https://api.groq.com/openai/v1/chat/completions';
   }

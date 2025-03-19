@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { Plugin } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -9,65 +10,33 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 4173,
     proxy: {
-      // Proxy for Claude API requests
-      '/api/claude-proxy': {
-        target: 'https://api.anthropic.com',
+      // Proxy API requests to avoid CORS issues
+      '/api/proxy/claude': {
+        target: 'https://api.anthropic.com/v1/messages',
         changeOrigin: true,
-        rewrite: (path) => '/v1/messages',
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            // We need to completely buffer the request body before we can modify it
-            let bodyChunks: Buffer[] = [];
-            let bodyLength = 0;
+        rewrite: (path) => '',
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            // Get the API key from the original request headers
+            const apiKey = req.headers['x-api-key'];
             
-            req.on('data', (chunk: Buffer) => {
-              bodyChunks.push(chunk);
-              bodyLength += chunk.length;
-            });
-            
-            req.on('end', () => {
-              try {
-                // Concatenate all chunks to get the complete body
-                const bodyBuffer = Buffer.concat(bodyChunks, bodyLength);
-                const body = bodyBuffer.toString();
-                const data = JSON.parse(body);
-                
-                // Set the Anthropic API key in the headers
-                if (data.apiKey) {
-                  proxyReq.setHeader('x-api-key', data.apiKey);
-                  proxyReq.setHeader('anthropic-version', data.anthropicVersion || '2023-06-01');
-                  
-                  // Remove the apiKey and anthropicVersion from the body
-                  delete data.apiKey;
-                  delete data.anthropicVersion;
-                  
-                  // Create a new body with the modified data
-                  const newBody = JSON.stringify(data);
-                  
-                  // Update content length and write the new body
-                  proxyReq.setHeader('Content-Length', Buffer.byteLength(newBody));
-                  // End the request with the new body
-                  proxyReq.write(newBody);
-                  proxyReq.end();
-                } else {
-                  console.error('No API key found in request body');
-                  // If no API key, just end the request with original body
-                  proxyReq.end(bodyBuffer);
-                }
-              } catch (error) {
-                console.error('Error processing proxy request:', error);
-              }
-            });
+            // Set the required headers for Anthropic API
+            if (apiKey) {
+              proxyReq.setHeader('x-api-key', apiKey);
+              proxyReq.setHeader('anthropic-version', '2023-06-01');
+              proxyReq.setHeader('content-type', 'application/json');
+              proxyReq.setHeader('anthropic-dangerous-direct-browser-access', 'true');
+            }
           });
+          return [proxy, options];
         }
       }
     }
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+    ...(mode === 'production' ? [componentTagger()] : [])
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

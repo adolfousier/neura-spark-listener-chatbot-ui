@@ -3,14 +3,14 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    image: neura_spark_listener_v0.1.5
+    image: neura_spark_listener_v0.1.7
     container_name: ${CONTAINER_NAME}
     ports:
       - "${VITE_PORT:-3000}:3000"
     environment:
-      - VITE_GROQ_API_KEY=#{VITE_GROQ_API_KEY} 
-      - VITE_OPENAI_API_KEY=#{VITE_OPENAI_API_KEY}
-      - VITE_CLAUDE_API_KEY=${VITE_OPENAI_API_KEY}
+      - VITE_GROQ_API_KEY=${VITE_GROQ_API_KEY}
+      - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
+      - VITE_CLAUDE_API_KEY=${VITE_CLAUDE_API_KEY}
 
       # Optional with defaults
       - VITE_BACKEND_SERVICE_PROVIDER=${VITE_BACKEND_SERVICE_PROVIDER}

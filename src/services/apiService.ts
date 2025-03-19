@@ -1,51 +1,13 @@
-
 import { getApiKeyForProvider, getApiUrlForProvider, generateId } from "@/lib/utils";
-import { ChatRequest, ChatResponse, ChatStreamResponse, Provider } from "@/types";
+import { ChatRequest, ChatResponse, Provider } from "@/types";
 import { FlowiseClient } from 'flowise-sdk';
 // Import the MessageType type from flowise-sdk
 type MessageType = 'apiMessage' | 'userMessage';
 
 /**
- * Sends a request through a proxy endpoint to avoid CORS issues
- * @param proxyUrl The URL of the proxy endpoint
- * @param requestBody The request body to send
- * @param stream Whether to stream the response
- * @returns The response from the proxy
+ * This file contains the API service for sending chat requests to various providers
+ * including OpenAI, Groq, Claude, and Flowise.
  */
-async function sendProxyRequest(
-  proxyUrl: string,
-  requestBody: any,
-  stream: boolean
-): Promise<ChatResponse | ReadableStream<Uint8Array>> {
-  try {
-    const response = await fetch(proxyUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(
-        `API request failed with status ${response.status}: ${
-          errorData?.error?.message || response.statusText
-        }`
-      );
-    }
-
-    if (stream) {
-      return response.body as ReadableStream<Uint8Array>;
-    } else {
-      const data = await response.json();
-      return data as ChatResponse;
-    }
-  } catch (error) {
-    console.error('Error in proxy request:', error);
-    throw error;
-  }
-}
 
 export async function sendChatRequest(
   provider: Provider, 
@@ -60,47 +22,109 @@ export async function sendChatRequest(
 
   if (provider === 'flowise') {
     return sendFlowiseRequest(apiUrl, apiKey, chatRequest);
-  }
-
-  // Set up headers based on provider
-  let headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-  
-  // Set up request body based on provider
-  let requestBody: any;
-  
-  if (provider === 'claude') {
-    // For Claude API, we need to use a proxy approach to avoid CORS issues
-    // Create a proxy URL that will be handled by our backend or serverless function
-    const proxyUrl = '/api/claude-proxy';
-    
-    // Format request body for Claude API
-    requestBody = {
-      apiKey: apiKey, // Pass the API key in the request body instead of headers for the proxy
-      model: chatRequest.model,
-      max_tokens: 4096,
-      messages: chatRequest.messages,
-      stream: chatRequest.stream,
-      anthropicVersion: '2023-06-01'
-    };
-    
-    // Use the proxy URL instead of direct API call
-    return sendProxyRequest(proxyUrl, requestBody, chatRequest.stream);
+  } else if (provider === 'claude') {
+    return sendClaudeRequest(apiUrl, apiKey, chatRequest);
   } else {
-    // OpenAI-compatible APIs (Groq, OpenAI)
-    headers = {
-      ...headers,
-      Authorization: `Bearer ${apiKey}`
-    };
-    requestBody = chatRequest;
+    return sendOpenAICompatibleRequest(apiUrl, apiKey, chatRequest);
   }
+}
+
+/**
+ * Send a request to Claude API through a server proxy to avoid CORS issues
+ */
+async function sendClaudeRequest(
+  apiUrl: string,
+  apiKey: string,
+  chatRequest: ChatRequest
+): Promise<ChatResponse | ReadableStream<Uint8Array>> {
+  try {
+    // Convert messages to the format expected by Anthropic API
+    // Filter out any messages with empty content as Claude API doesn't accept them
+    const anthropicMessages = chatRequest.messages
+      .filter(msg => msg.content && msg.content.trim() !== '')
+      .map(msg => ({
+        role: msg.role === 'system' ? 'user' : msg.role as 'user' | 'assistant',
+        content: msg.content
+      }));
+      
+    // Ensure there's at least one message
+    if (anthropicMessages.length === 0) {
+      throw new Error('No valid messages found for Claude API request. Messages cannot have empty content.');
+    }
+    
+    // Create the request body
+    const requestBody = {
+      model: chatRequest.model,
+      max_tokens: chatRequest.stream ? 16000 : 4096,
+      messages: anthropicMessages,
+      stream: chatRequest.stream
+    };
+
+    // Set up a proxy endpoint on your backend server to forward requests to Anthropic
+    // This endpoint should be configured in your Vite server proxy settings
+    const proxyEndpoint = '/api/proxy/claude'; 
+    
+    const response = await fetch(proxyEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey, // The server will use this to make the Anthropic request
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        `Claude API request failed with status ${response.status}: ${
+          errorData?.error?.message || response.statusText
+        }`
+      );
+    }
+
+    if (chatRequest.stream) {
+      return response.body as ReadableStream<Uint8Array>;
+    } else {
+      const data = await response.json();
+      // Format the response to match OpenAI format
+      return {
+        id: data.id,
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: 'assistant',
+              content: data.content?.[0]?.text || ''
+            },
+            finish_reason: 'stop'
+          }
+        ]
+      } as ChatResponse;
+    }
+  } catch (error) {
+    console.error('Error in Claude API request:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send a request to OpenAI-compatible APIs (OpenAI, Groq)
+ */
+async function sendOpenAICompatibleRequest(
+  apiUrl: string,
+  apiKey: string,
+  chatRequest: ChatRequest
+): Promise<ChatResponse | ReadableStream<Uint8Array>> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`
+  };
 
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers,
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify(chatRequest),
     });
 
     if (!response.ok) {
@@ -284,14 +308,29 @@ export async function* streamChatResponse(
         
         for (const line of lines) {
           try {
-            // Handle Groq and other OpenAI-compatible APIs
+            // Skip ping events
+            if (line.includes('event: ping')) continue;
+            
+            // Handle Claude API specific events
+            if (line.startsWith('event:')) {
+              // We're only interested in content_block_delta events for text
+              continue;
+            }
+            
+            // Extract the data part
+            if (!line.startsWith('data:')) continue;
+            
             const trimmedLine = line.startsWith('data: ') ? line.slice(6) : line;
             if (trimmedLine.trim() === '') continue;
             
             const data = JSON.parse(trimmedLine);
             
-            // Check for content in delta (streaming format)
-            if (data.choices && data.choices[0]?.delta?.content) {
+            // Handle Claude API specific data formats
+            if (data.type === 'content_block_delta' && data.delta?.type === 'text_delta') {
+              yield data.delta.text;
+            }
+            // Handle OpenAI-compatible APIs
+            else if (data.choices && data.choices[0]?.delta?.content) {
               yield data.choices[0].delta.content;
             }
             // Also check for content in message (non-streaming format)
@@ -311,5 +350,3 @@ export async function* streamChatResponse(
     reader.releaseLock();
   }
 }
-
-// The FlowiseRequest interface is no longer needed as we're using the SDK's types
