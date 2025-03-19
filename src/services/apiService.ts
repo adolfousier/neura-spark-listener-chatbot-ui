@@ -5,6 +5,48 @@ import { FlowiseClient } from 'flowise-sdk';
 // Import the MessageType type from flowise-sdk
 type MessageType = 'apiMessage' | 'userMessage';
 
+/**
+ * Sends a request through a proxy endpoint to avoid CORS issues
+ * @param proxyUrl The URL of the proxy endpoint
+ * @param requestBody The request body to send
+ * @param stream Whether to stream the response
+ * @returns The response from the proxy
+ */
+async function sendProxyRequest(
+  proxyUrl: string,
+  requestBody: any,
+  stream: boolean
+): Promise<ChatResponse | ReadableStream<Uint8Array>> {
+  try {
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        `API request failed with status ${response.status}: ${
+          errorData?.error?.message || response.statusText
+        }`
+      );
+    }
+
+    if (stream) {
+      return response.body as ReadableStream<Uint8Array>;
+    } else {
+      const data = await response.json();
+      return data as ChatResponse;
+    }
+  } catch (error) {
+    console.error('Error in proxy request:', error);
+    throw error;
+  }
+}
+
 export async function sendChatRequest(
   provider: Provider, 
   chatRequest: ChatRequest
@@ -20,16 +62,45 @@ export async function sendChatRequest(
     return sendFlowiseRequest(apiUrl, apiKey, chatRequest);
   }
 
-  const headers: HeadersInit = {
+  // Set up headers based on provider
+  let headers: HeadersInit = {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${apiKey}`,
   };
+  
+  // Set up request body based on provider
+  let requestBody: any;
+  
+  if (provider === 'claude') {
+    // For Claude API, we need to use a proxy approach to avoid CORS issues
+    // Create a proxy URL that will be handled by our backend or serverless function
+    const proxyUrl = '/api/claude-proxy';
+    
+    // Format request body for Claude API
+    requestBody = {
+      apiKey: apiKey, // Pass the API key in the request body instead of headers for the proxy
+      model: chatRequest.model,
+      max_tokens: 4096,
+      messages: chatRequest.messages,
+      stream: chatRequest.stream,
+      anthropicVersion: '2023-06-01'
+    };
+    
+    // Use the proxy URL instead of direct API call
+    return sendProxyRequest(proxyUrl, requestBody, chatRequest.stream);
+  } else {
+    // OpenAI-compatible APIs (Groq, OpenAI)
+    headers = {
+      ...headers,
+      Authorization: `Bearer ${apiKey}`
+    };
+    requestBody = chatRequest;
+  }
 
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers,
-      body: JSON.stringify(chatRequest),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {

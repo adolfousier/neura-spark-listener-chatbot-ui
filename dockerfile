@@ -12,7 +12,9 @@ RUN apt-get update -y \
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm install
+
+# Install dependencies with platform-specific settings to avoid Rollup issues
+RUN npm install --platform=linux --arch=x64 --no-optional
 
 # Copy entire project
 COPY . .
@@ -20,8 +22,8 @@ COPY . .
 # First Time - Generate Prisma Client
 RUN npx prisma generate
 
-# Build the application
-RUN npm run build
+# Build the application with NODE_OPTIONS to avoid optional dependency issues
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 # Expose port
 EXPOSE 3000

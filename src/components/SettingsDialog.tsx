@@ -98,9 +98,9 @@ export function SettingsDialog() {
                 )}
                 {localSettings.provider === 'claude' && (
                   <>
-                    <SelectItem value="claude-3.5-opus-20240229">Claude 3.5 Opus</SelectItem>
-                    <SelectItem value="claude-3.7-sonnet">Claude 3.7 Sonnet</SelectItem>
-                    <SelectItem value="claude-3.5-haiku-20240307">Claude 3.5 Haiku</SelectItem>
+                    <SelectItem value="claude-3-5-opus-latest">Claude 3.5 Opus</SelectItem>
+                    <SelectItem value="claude-3-7-sonnet-latest">Claude 3.7 Sonnet</SelectItem>
+                    <SelectItem value="claude-3-5-haiku-latest">Claude 3.5 Haiku</SelectItem>
                   </>
                 )}
                 {localSettings.provider === 'openai' && (
