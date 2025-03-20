@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Copy } from "lucide-react";
 import { countTokens } from "@/lib/tokenizer";
 import { useToast } from "@/hooks/use-toast";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 
 interface MessageListProps {
@@ -78,7 +79,7 @@ const tokenCount = message.tokenCount || countTokens(message.content);
       
       <div
         className={cn(
-          "flex max-w-[80%] flex-col gap-2 rounded-lg px-4 py-3 animate-fade-in relative group",
+          "flex max-w-[80%] flex-col gap-2 rounded-lg px-4 py-3 animate-fade-in relative group overflow-hidden",
           isUser
             ? "bg-primary text-primary-foreground"
             : "bg-secondary text-secondary-foreground"
@@ -86,8 +87,8 @@ const tokenCount = message.tokenCount || countTokens(message.content);
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="text-sm break-words whitespace-pre-wrap">
-          {message.content}
+        <div className="text-sm overflow-hidden">
+          <MarkdownRenderer content={message.content} />
         </div>
         <div className="text-xs opacity-50 mt-1 flex items-center gap-2">
           <span>{formatDate(message.createdAt)}</span>
