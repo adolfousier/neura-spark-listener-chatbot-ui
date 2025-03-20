@@ -20,6 +20,9 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 
 - **Switch Easily Multiple AI Providers**: Seamlessly switch between Groq, Neura, Claude, Flowise, OpenRouter or OpenAI
 - **Customized System Prompts**: Provide custom instructions to the AI model that will be applied to all conversations
+- **Auto-fit Input**: Automatically expands as you type, providing a comfortable writing experience while maintaining a clean interface.
+- Messages Token Counter: Displays the number of tokens used in each message.
+- AI Message Copying: Users can easily copy AI-generated or user messages.
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
 - **Dark/Light Mode**: Each template has both light and dark variants
 - **Conversation Management**: Save, browse, and manage multiple chat conversations
@@ -27,10 +30,8 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 - **Message Streaming**: Real-time message streaming for a responsive chat experience
 - **Responsive Design**: Works smoothly on desktop and mobile devices
 - **Customizable Settings**: Adjust parameters like temperature, model selection, and more
-- **Auto-fit Input**: Automatically expands as you type, providing a comfortable writing experience while maintaining a clean interface.
 
 ## Comming Soon
-- Messages Token Counter: Displays the number of tokens used in each message.
 - Follow-up Prompts: Suggest follow-up questions to enhance user engagement.
 - File Upload Support: Upload and process various file types including TXT, PDF, DOC, DOCX, CSV, JSON, and XML.
 - Image Upload Support: Upload and process image files with preview functionality.
@@ -38,7 +39,6 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 Attachment Preview: Shows thumbnails for uploaded images and file information for documents.
 - File Size Limits: Enforces configurable size limits based on Flowise settings.
 Drag-and-Drop Functionality: Supports drag-and-drop for uploading files and images.
-- AI Message Copying: Users can easily copy AI-generated or user messages.
 - Boxed/Full Screen Mode: Allows users to switch between a boxed chat interface and a fullscreen experience.
 - Personalized Welcome Message: Allows defining a personalized welcome message to greet users upon entering the chat.
 Visual Feedback: Displays loading animations and progress indicators during operations.

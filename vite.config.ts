@@ -1,25 +1,28 @@
+// vite.config.js
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
 
-// https://vitejs.dev/config/
+
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 4173,
     proxy: {
-      // Proxy API requests to avoid CORS issues
+      // Add this new endpoint for tokenization
+      '/api/tokenize': {
+        target: 'http://localhost:4173/',
+        changeOrigin: true,
+        rewrite: (path) => path,
+      },
+      // Keep your existing Claude proxy
       '/api/proxy/claude': {
         target: 'https://api.anthropic.com/v1/messages',
         changeOrigin: true,
         rewrite: (path) => '',
         configure: (proxy, options) => {
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Get the API key from the original request headers
             const apiKey = req.headers['x-api-key'];
-            
-            // Set the required headers for Anthropic API
             if (apiKey) {
               proxyReq.setHeader('x-api-key', apiKey);
               proxyReq.setHeader('anthropic-version', '2023-06-01');
@@ -31,10 +34,6 @@ export default defineConfig(({ mode }) => ({
       }
     }
   },
-  plugins: [
-    react(),
-    ...(mode === 'production' ? [componentTagger()] : [])
-  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

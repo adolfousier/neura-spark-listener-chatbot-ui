@@ -82,7 +82,8 @@ export function MessageInput() {
           id: generateId(),
           role: 'assistant' as const,
           content: '',
-          createdAt: new Date()
+          createdAt: new Date(),
+          tokenCount: 0 // Initialize token count
         };
         
         // Add the empty message that will be updated with streaming content
@@ -104,7 +105,12 @@ export function MessageInput() {
         for await (const chunk of stream) {
           responseContent += chunk;
           
-          // Update the message with the current content
+          // Update the message with the current content and recalculate token count
+          const words = responseContent
+            .trim()
+            .split(/\s+|[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/) 
+            .filter(word => word.length > 0);
+          
           setConversations(prev => 
             prev.map(conv => 
               conv.id === currentConversationId 
@@ -112,7 +118,11 @@ export function MessageInput() {
                     ...conv,
                     messages: conv.messages.map(msg => 
                       msg.id === assistantMessage.id
-                        ? { ...msg, content: responseContent }
+                        ? { 
+                            ...msg, 
+                            content: responseContent,
+                            tokenCount: words.length 
+                          }
                         : msg
                     ),
                     updatedAt: new Date()

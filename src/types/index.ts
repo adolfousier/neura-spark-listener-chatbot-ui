@@ -8,6 +8,7 @@ export type Message = {
   role: 'user' | 'assistant' | 'system';
   content: string;
   createdAt: Date;
+  tokenCount?: number; // Optional token count field
 };
 
 export type Conversation = {

@@ -1,9 +1,14 @@
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Conversation, Message as MessageType } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, formatDate } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Copy } from "lucide-react";
+import { countTokens } from "@/lib/tokenizer";
+import { useToast } from "@/hooks/use-toast";
 
 
 interface MessageListProps {
@@ -41,6 +46,21 @@ interface MessageProps {
 
 function Message({ message }: MessageProps) {
   const isUser = message.role === "user";
+  const [isHovered, setIsHovered] = useState(false);
+  const { toast } = useToast();
+  
+  // Use the tokenCount from the message object or calculate it if not available
+// In the Message component, update the tokenCount calculation:
+const tokenCount = message.tokenCount || countTokens(message.content);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(message.content);
+    toast({
+      title: "Copied to clipboard",
+      description: "Message content has been copied to clipboard",
+      duration: 2000,
+    });
+  };
 
   return (
     <div
@@ -58,18 +78,42 @@ function Message({ message }: MessageProps) {
       
       <div
         className={cn(
-          "flex max-w-[80%] flex-col gap-2 rounded-lg px-4 py-3 animate-fade-in",
+          "flex max-w-[80%] flex-col gap-2 rounded-lg px-4 py-3 animate-fade-in relative group",
           isUser
             ? "bg-primary text-primary-foreground"
             : "bg-secondary text-secondary-foreground"
         )}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div className="text-sm break-words whitespace-pre-wrap">
           {message.content}
         </div>
-        <div className="text-xs opacity-50 mt-1">
-          {formatDate(message.createdAt)}
+        <div className="text-xs opacity-50 mt-1 flex items-center gap-2">
+          <span>{formatDate(message.createdAt)}</span>
+          <span>•</span>
+          <span>{tokenCount} tokens</span>
         </div>
+        
+        {isHovered && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute bottom-1 right-1 opacity-70 hover:opacity-100 h-8 w-8 shadow-sm rounded-xl"
+                  onClick={copyToClipboard}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy message</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
       
       {isUser && (

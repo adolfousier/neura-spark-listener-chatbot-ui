@@ -113,11 +113,19 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const addMessage = useCallback((role: 'user' | 'assistant' | 'system', content: string) => {
     if (!currentConversationId) return;
     
+    // Calculate token count directly when creating the message
+    // Simple word-based tokenization
+    const words = content
+      .trim()
+      .split(/\s+|[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/) 
+      .filter(word => word.length > 0);
+    
     const message: Message = {
       id: generateId(),
       role,
       content,
-      createdAt: new Date()
+      createdAt: new Date(),
+      tokenCount: words.length
     };
     
     setConversations(prev => 
