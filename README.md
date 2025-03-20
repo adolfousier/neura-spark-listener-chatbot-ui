@@ -20,12 +20,14 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 
 - **Switch Easily Multiple AI Providers**: Seamlessly switch between Groq, Neura, Claude, Flowise, OpenRouter or OpenAI
 - **Customized System Prompts**: Provide custom instructions to the AI model that will be applied to all conversations
-- **Auto-fit Input**: Automatically expands as you type, providing a comfortable writing experience while maintaining a clean interface.
-- **Messages Token Counter**: Displays the number of tokens used in each message.
-- **Messages Copying**: Users can easily copy AI-generated or user messages.
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
 - **Dark/Light Mode**: Each template has both light and dark variants
 - **Conversation Management**: Save, browse, and manage multiple chat conversations
+- **Auto-fit Input**: Automatically expands as you type, providing a comfortable writing experience while maintaining a clean interface.
+- **Messages Token Counter**: Displays the number of tokens used in each message.
+- **Messages Copying**: Users can easily copy AI-generated or user messages.
+- **Markdown Support**: Responses are displayed with Markdown formatting to improve readability and presentation.
+Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
 - **Persistent Storage**: Database-backed conversation history using Prisma ORM
 - **Message Streaming**: Real-time message streaming for a responsive chat experience
 - **Responsive Design**: Works smoothly on desktop and mobile devices
@@ -42,9 +44,6 @@ Drag-and-Drop Functionality: Supports drag-and-drop for uploading files and imag
 - Boxed/Full Screen Mode: Allows users to switch between a boxed chat interface and a fullscreen experience.
 - Personalized Welcome Message: Allows defining a personalized welcome message to greet users upon entering the chat.
 Visual Feedback: Displays loading animations and progress indicators during operations.
-- Markdown Support: Responses are displayed with Markdown formatting to improve readability and presentation.
-Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
-
 
 ## Getting Started
 
