@@ -22,6 +22,8 @@ export function MessageList({ conversation, className }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isStreaming } = useChat();
   const [showButton, setShowButton] = useState(false);
+  const previousStreamingRef = useRef(isStreaming);
+  const userScrolledRef = useRef(false);
   
   // Get theme styles
   const { template } = useTheme();
@@ -42,6 +44,7 @@ export function MessageList({ conversation, className }: MessageListProps) {
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     setShowButton(false);
+    userScrolledRef.current = false;
   }, []);
   
   // Only scroll to bottom when a new message is added (not during streaming)
@@ -63,6 +66,9 @@ export function MessageList({ conversation, className }: MessageListProps) {
       const { scrollTop, scrollHeight, clientHeight } = viewport as HTMLElement;
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
       
+      // Consider the user has scrolled up if they're more than 100px from bottom
+      userScrolledRef.current = distanceFromBottom > 100;
+      
       // Show button only when scrolled up (more than 100px from bottom)
       setShowButton(distanceFromBottom > 100);
     };
@@ -74,6 +80,23 @@ export function MessageList({ conversation, className }: MessageListProps) {
       return () => scrollElement.removeEventListener('scroll', handleScroll);
     }
   }, []);
+  
+  // Detect when streaming ends and scroll to bottom if user hasn't scrolled up
+  useEffect(() => {
+    // Check if streaming just ended
+    if (previousStreamingRef.current && !isStreaming) {
+      // If user hasn't manually scrolled up
+      if (!userScrolledRef.current) {
+        // Slight delay to ensure content is fully rendered
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    }
+    
+    // Update ref for next check
+    previousStreamingRef.current = isStreaming;
+  }, [isStreaming]);
 
   return (
     <div className="relative h-full" ref={scrollAreaRef}>
