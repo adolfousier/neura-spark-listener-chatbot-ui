@@ -301,7 +301,7 @@ function Message({ message, onEditMessage }: MessageProps) {
           </div>
           
           {isHovered && !isEditing && (
-            <div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm p-0.5 rounded-md flex gap-1 shadow-md z-10">
+            <div className="absolute -bottom-6 right-2 bg-background/80 backdrop-blur-sm p-1 rounded-sm flex gap-2 shadow-md z-20">
               <Button 
                 variant="ghost" 
                 size="icon" 
