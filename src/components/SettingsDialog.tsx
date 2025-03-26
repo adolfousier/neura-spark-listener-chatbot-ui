@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -216,6 +215,30 @@ export function SettingsDialog() {
               <Label htmlFor="dark-mode">
                 {localSettings.darkMode ? "Enabled" : "Disabled"}
               </Label>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="context-window" className="text-right">
+              Context Window
+            </Label>
+            <div className="col-span-3">
+              <div className="flex items-center space-x-2">
+                <Slider
+                  id="context-window"
+                  min={1}
+                  max={10}
+                  step={1}
+                  defaultValue={[localSettings.contextWindowSize]}
+                  onValueChange={(value) =>
+                    setLocalSettings({ ...localSettings, contextWindowSize: value[0] })
+                  }
+                />
+                <span className="w-8 text-center">{localSettings.contextWindowSize}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Number of message pairs to include in context
+              </p>
             </div>
           </div>
           

@@ -333,8 +333,19 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         // Add regular conversation history
         const updatedConversation = conversations.find(conv => conv.id === currentConversationId);
         if (updatedConversation) {
+          // Limit the conversation history based on the context window setting
+          const allMessages = updatedConversation.messages;
+          let messagesToInclude = allMessages;
+          
+          // If we have more messages than the context window, limit it
+          if (allMessages.length > settings.contextWindowSize * 2) {
+            // Include the last N message pairs (user+assistant)
+            const startIndex = Math.max(0, allMessages.length - (settings.contextWindowSize * 2));
+            messagesToInclude = allMessages.slice(startIndex);
+          }
+          
           messages.push(
-            ...updatedConversation.messages.map(m => ({
+            ...messagesToInclude.map(m => ({
               role: m.role,
               content: m.content
             }))

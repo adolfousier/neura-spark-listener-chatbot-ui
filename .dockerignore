@@ -8,6 +8,7 @@
 */logs
 /target
 *.env
+.env
 src/data/env
 Cargo.lock
 src/data/logs

@@ -20,7 +20,7 @@ interface MessageListProps {
 export function MessageList({ conversation, className }: MessageListProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { isStreaming, sendMessage } = useChat();
+  const { isStreaming, sendMessage, settings } = useChat();
   const [showButton, setShowButton] = useState(false);
   const previousStreamingRef = useRef(isStreaming);
   const userScrolledRef = useRef(false);
@@ -118,8 +118,9 @@ export function MessageList({ conversation, className }: MessageListProps) {
       return;
     }
     
-    // Calculate the context window - last 5 message pairs before the edited message
-    const contextStartIndex = Math.max(0, messageIndex - 10); // 5 pairs = 10 messages
+    // Calculate the context window based on settings
+    const messageCount = settings.contextWindowSize * 2; // Each pair has 2 messages
+    const contextStartIndex = Math.max(0, messageIndex - messageCount);
     const contextEndIndex = messageIndex;
     
     // Get the context messages
@@ -138,7 +139,7 @@ export function MessageList({ conversation, className }: MessageListProps) {
       title: "Message edited",
       description: "Regenerating response based on your edit...",
     });
-  }, [conversation.messages, sendMessage, toast]);
+  }, [conversation.messages, sendMessage, toast, settings]);
 
   return (
     <div className="relative h-full" ref={scrollAreaRef}>

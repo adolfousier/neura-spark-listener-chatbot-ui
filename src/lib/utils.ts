@@ -1,4 +1,3 @@
-
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { type Provider, type Settings } from "@/types";
@@ -36,6 +35,7 @@ export function getDefaultSettings(): Settings {
     template: 'minimal',
     darkMode: false,
     systemPrompt: import.meta.env.VITE_DEFAULT_SYSTEM_PROMPT || '',
+    contextWindowSize: 5,
   };
 }
 

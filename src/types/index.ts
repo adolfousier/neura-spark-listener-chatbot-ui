@@ -1,4 +1,3 @@
-
 export type Provider = 'groq' | 'claude' | 'openai' | 'flowise' | 'openrouter' | 'neura';
 
 export type Template = 'minimal' | 'vibrant' | 'elegant';
@@ -28,6 +27,7 @@ export type Settings = {
   template: Template;
   darkMode: boolean;
   systemPrompt: string;
+  contextWindowSize: number; // Number of message pairs to include in context
 };
 
 export type ChatRequest = {
