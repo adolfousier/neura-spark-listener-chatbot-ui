@@ -235,116 +235,103 @@ function Message({ message, onEditMessage }: MessageProps) {
   };
 
   return (
-    <div
-      className={cn(
-        "flex w-full items-start gap-4 py-3",
-        isUser ? "justify-end" : "justify-start"
-      )}
-    >
-      {!isUser && (
-        <Avatar>
-          <AvatarFallback>AI</AvatarFallback>
-          <AvatarImage src="/assistant-avatar.png" />
-        </Avatar>
-      )}
-      
+    <div className="relative w-full py-3">
       <div
         className={cn(
-          "flex max-w-[80%] flex-col gap-2 rounded-lg px-4 py-3 animate-fade-in relative group overflow-hidden",
-          isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-secondary text-secondary-foreground"
+          "flex w-full items-start gap-4 group",
+          isUser ? "justify-end" : "justify-start"
         )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {isEditing && isUser ? (
-          <div className="w-full">
-            <textarea
-              ref={textareaRef}
-              className="w-full min-h-[100px] p-2 text-sm bg-background text-foreground border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              value={editedContent}
-              onChange={(e) => setEditedContent(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Edit your message..."
-            />
-            <div className="flex justify-end mt-2 space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleCancelEdit}
-              >
-                Cancel
-              </Button>
-              <Button 
-                size="sm" 
-                onClick={handleSaveEdit}
-              >
-                Save
-              </Button>
+        {!isUser && (
+          <Avatar>
+            <AvatarFallback>AI</AvatarFallback>
+            <AvatarImage src="/assistant-avatar.png" />
+          </Avatar>
+        )}
+        
+        <div className="relative">
+          <div
+            className={cn(
+              "flex flex-col gap-2 rounded-lg px-4 py-3 animate-fade-in overflow-hidden",
+              isUser
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground",
+              "w-full" // Fixed width for both user and assistant messages
+            )}
+          >
+            {isEditing && isUser ? (
+              <div className="w-full">
+                <textarea
+                  ref={textareaRef}
+                  className="w-full min-h-[100px] p-2 text-sm bg-background text-foreground border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={editedContent}
+                  onChange={(e) => setEditedContent(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Edit your message..."
+                />
+                <div className="flex justify-end mt-2 space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    onClick={handleSaveEdit}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm overflow-hidden">
+                <MarkdownRenderer content={message.content} />
+              </div>
+            )}
+            
+            <div className="text-xs opacity-50 mt-1 flex items-center gap-2">
+              <span>{formatDate(message.createdAt)}</span>
+              <span>•</span>
+              <span>{tokenCount} tokens</span>
             </div>
           </div>
-        ) : (
-          <div className="text-sm overflow-hidden">
-            <MarkdownRenderer content={message.content} />
-          </div>
-        )}
-        
-        <div className="text-xs opacity-50 mt-1 flex items-center gap-2">
-          <span>{formatDate(message.createdAt)}</span>
-          <span>•</span>
-          <span>{tokenCount} tokens</span>
+          
+          {isHovered && !isEditing && (
+            <div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm p-0.5 rounded-md flex gap-1 shadow-md z-10">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7 rounded-md"
+                onClick={copyToClipboard}
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+              
+              {isUser && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-7 w-7 rounded-md"
+                  onClick={handleEdit}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </Button>
+              )}
+            </div>
+          )}
         </div>
         
-        {isHovered && !isEditing && (
-          <div className="absolute bottom-1 right-1 flex gap-1">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="opacity-70 hover:opacity-100 h-8 w-8 shadow-sm rounded-xl"
-                    onClick={copyToClipboard}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Copy message</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            {isUser && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="opacity-70 hover:opacity-100 h-8 w-8 shadow-sm rounded-xl"
-                      onClick={handleEdit}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Edit message</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
+        {isUser && (
+          <Avatar>
+            <AvatarFallback>You</AvatarFallback>
+            <AvatarImage src="/user-avatar.png" />
+          </Avatar>
         )}
       </div>
-      
-      {isUser && (
-        <Avatar>
-          <AvatarFallback>You</AvatarFallback>
-          <AvatarImage src="/user-avatar.png" />
-        </Avatar>
-      )}
     </div>
   );
 }
