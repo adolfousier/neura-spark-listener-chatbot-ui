@@ -1,12 +1,13 @@
 import { getApiKeyForProvider, getApiUrlForProvider, generateId } from "@/lib/utils";
 import { ChatRequest, ChatResponse, Provider } from "@/types";
 import { FlowiseClient } from 'flowise-sdk';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 // Import the MessageType type from flowise-sdk
 type MessageType = 'apiMessage' | 'userMessage';
 
 /**
  * This file contains the API service for sending chat requests to various providers
- * including OpenAI, Groq, Claude, and Flowise.
+ * including OpenAI, Groq, Claude, Flowise, and Google.
  */
 
 export async function sendChatRequest(
@@ -23,11 +24,13 @@ export async function sendChatRequest(
   if (provider === 'flowise') {
     return sendFlowiseRequest(apiUrl, apiKey, chatRequest);
   } else if (provider === 'neura') {
-      return sendNeuraRequest(apiUrl, apiKey, chatRequest);
+    return sendNeuraRequest(apiUrl, apiKey, chatRequest);
   } else if (provider === 'claude') {
     return sendClaudeRequest(apiUrl, apiKey, chatRequest);
   } else if (provider === 'openrouter') {
     return sendOpenRouterRequest(apiUrl, apiKey, chatRequest);
+  } else if (provider === 'google') {
+    return sendGoogleRequest(apiUrl, apiKey, chatRequest);
   } else {
     return sendOpenAICompatibleRequest(apiUrl, apiKey, chatRequest);
   }
@@ -533,4 +536,252 @@ export async function* streamChatResponse(
   } finally {
     reader.releaseLock();
   }
+}
+
+/**
+ * Send a request to Google AI services
+ */
+async function sendGoogleRequest(
+  apiUrl: string,
+  apiKey: string,
+  chatRequest: ChatRequest
+): Promise<ChatResponse | ReadableStream<Uint8Array>> {
+  if (!apiKey) {
+    throw new Error('Google API key is not set. Please check your environment variables.');
+  }
+
+  try {
+    // Initialize the Google GenAI client
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // Check if the model is an image generation model
+    if (chatRequest.model === 'imagen-3.0-generate-001') {
+      return handleImageGeneration(genAI, chatRequest);
+    }
+    
+    // Initialize the model
+    const model = genAI.getGenerativeModel({
+      model: chatRequest.model,
+      systemInstruction: chatRequest.messages.find(m => m.role === 'system')?.content
+    });
+
+    // Filter out system messages as they're handled separately via systemInstruction
+    const nonSystemMessages = chatRequest.messages.filter(m => m.role !== 'system');
+    
+    // For code-gecko, only pass the last user message directly
+    if (chatRequest.model === 'code-gecko') {
+      const lastUserMessage = nonSystemMessages.filter(m => m.role === 'user').pop();
+      
+      if (!lastUserMessage) {
+        throw new Error('No user message found for code-gecko request');
+      }
+      
+      const result = await model.generateContent(lastUserMessage.content);
+      const response = await result.response;
+      const text = response.text();
+      
+      return {
+        id: generateId(),
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: 'assistant',
+              content: text
+            },
+            finish_reason: 'stop'
+          }
+        ]
+      };
+    }
+    
+    // Convert messages to Google's chat format
+    let history = [];
+    
+    // Google's API requires strict alternation between user and model messages,
+    // and the first message must be from the user
+    // We need to process messages to ensure this pattern
+    for (let i = 0; i < nonSystemMessages.length; i++) {
+      const msg = nonSystemMessages[i];
+      const role = msg.role === 'user' ? 'user' : 'model';
+      
+      // Add the message to history
+      history.push({
+        role: role,
+        parts: [{ text: msg.content }]
+      });
+    }
+    
+    // Ensure the conversation starts with a user message
+    if (history.length > 0 && history[0].role !== 'user') {
+      // If the first message is not from a user, add a placeholder user message
+      history.unshift({
+        role: 'user',
+        parts: [{ text: 'Hello' }]
+      });
+    }
+    
+    // Ensure proper user/model alternation throughout the history
+    const processedHistory = [];
+    let lastRole = null;
+    
+    for (const msg of history) {
+      // Skip consecutive messages with the same role
+      if (lastRole === msg.role) {
+        // Append content to the last message if same role
+        const lastMsg = processedHistory[processedHistory.length - 1];
+        lastMsg.parts[0].text += "\n" + msg.parts[0].text;
+      } else {
+        processedHistory.push(msg);
+        lastRole = msg.role;
+      }
+    }
+    
+    // For streaming responses
+    if (chatRequest.stream) {
+      const encoder = new TextEncoder();
+      const chat = model.startChat({
+        history: processedHistory,
+        generationConfig: {
+          temperature: chatRequest.temperature
+        }
+      });
+      
+      // Get the last user message
+      const lastUserMessage = nonSystemMessages
+        .filter(msg => msg.role === 'user')
+        .pop();
+        
+      if (!lastUserMessage) {
+        throw new Error('No user message found for chat request');
+      }
+      
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            const result = await chat.sendMessageStream(lastUserMessage.content);
+            
+            for await (const chunk of result.stream) {
+              const text = chunk.text();
+              if (text) {
+                // Format the response to match OpenAI format for streaming
+                const formattedChunk = JSON.stringify({
+                  choices: [
+                    {
+                      index: 0,
+                      delta: { content: text },
+                      finish_reason: null
+                    }
+                  ]
+                });
+                
+                controller.enqueue(encoder.encode(`data: ${formattedChunk}\n\n`));
+              }
+            }
+            
+            // Signal the end of the stream
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          } catch (error) {
+            console.error('Error in Google AI streaming:', error);
+            controller.error(error);
+          }
+        }
+      });
+      
+      return stream;
+    } 
+    // For non-streaming responses
+    else {
+      const chat = model.startChat({
+        history: processedHistory,
+        generationConfig: {
+          temperature: chatRequest.temperature
+        }
+      });
+      
+      // Get the last user message
+      const lastUserMessage = nonSystemMessages
+        .filter(msg => msg.role === 'user')
+        .pop();
+        
+      if (!lastUserMessage) {
+        throw new Error('No user message found for chat request');
+      }
+      
+      const result = await chat.sendMessage(lastUserMessage.content);
+      const response = await result.response;
+      const text = response.text();
+      
+      return {
+        id: generateId(),
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: 'assistant',
+              content: text
+            },
+            finish_reason: 'stop'
+          }
+        ]
+      };
+    }
+  } catch (error) {
+    console.error('Error in Google AI request:', error);
+    throw error;
+  }
+}
+
+/**
+ * Handle Imagen image generation
+ */
+async function handleImageGeneration(
+  genAI: GoogleGenerativeAI,
+  chatRequest: ChatRequest
+): Promise<ChatResponse> {
+  // Get the last user message as the image prompt
+  const lastUserMessage = chatRequest.messages.filter(msg => msg.role === 'user').pop();
+  if (!lastUserMessage) {
+    throw new Error('No user message found for image generation');
+  }
+  
+  const model = genAI.getGenerativeModel({ model: 'imagen-3.0-generate-001' });
+  
+  const result = await model.generateContent(lastUserMessage.content);
+  const response = await result.response;
+  
+  // Check for generated images in the response parts
+  const images = [];
+  for (const part of response.candidates?.[0]?.content?.parts || []) {
+    if (part.inlineData && part.inlineData.mimeType?.startsWith('image/')) {
+      images.push(part.inlineData);
+    }
+  }
+  
+  if (!images || images.length === 0) {
+    throw new Error('No images generated');
+  }
+  
+  // Format the response with markdown image
+  const markdown = images.map((img) => {
+    if (img) {
+      return `![Generated Image](data:${img.mimeType};base64,${img.data})`;
+    }
+    return '';
+  }).join('\n\n');
+  
+  return {
+    id: generateId(),
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: 'assistant',
+          content: markdown
+        },
+        finish_reason: 'stop'
+      }
+    ]
+  };
 }

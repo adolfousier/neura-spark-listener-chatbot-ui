@@ -22,13 +22,21 @@ export function formatDate(date: Date): string {
 
 export function getProviderFromEnv(): Provider {
   const provider = import.meta.env.VITE_BACKEND_SERVICE_PROVIDER?.toLowerCase() as Provider;
-  return ['claude', 'openai', 'flowise', 'openrouter', 'neura'].includes(provider) ? provider : 'groq';
+  return ['claude', 'openai', 'flowise', 'openrouter', 'neura', 'google'].includes(provider) ? provider : 'groq';
 }
 
 export function getDefaultSettings(): Settings {
+  const provider = getProviderFromEnv();
+  let defaultModel = import.meta.env.VITE_GROQ_API_MODEL || 'deepseek-r1-distill-llama-70b';
+  
+  // Set appropriate default model based on provider
+  if (provider === 'google') {
+    defaultModel = import.meta.env.VITE_GOOGLE_API_MODEL || 'gemini-2.0-flash';
+  }
+  
   return {
-    provider: getProviderFromEnv(),
-    model: import.meta.env.VITE_GROQ_API_MODEL || 'deepseek-r1-distill-llama-70b',
+    provider,
+    model: defaultModel,
     temperature: 0.7,
     streamEnabled: import.meta.env.VITE_STREAM_ENABLED !== 'false',
     reasoningFormat: import.meta.env.VITE_REASONING_FORMAT || 'parsed',
@@ -61,9 +69,11 @@ export function getApiUrlForProvider(provider: Provider): string {
       return import.meta.env.VITE_OPENROUTER_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
     case 'flowise':
       return import.meta.env.VITE_FLOWISE_API_URL || 'http://localhost:3000/api/v1/prediction';
-      case 'neura':
-        return import.meta.env.VITE_NEURA_ROUTER_API_URL || 'https://api.meetneura.ai/v1/chat/completions/router';    
-      default:
+    case 'neura':
+      return import.meta.env.VITE_NEURA_ROUTER_API_URL || 'https://api.meetneura.ai/v1/chat/completions/router';
+    case 'google':
+      return import.meta.env.VITE_GOOGLE_API_URL || 'https://generativelanguage.googleapis.com';
+    default:
       return 'https://api.groq.com/openai/v1/chat/completions';
   }
 }
@@ -80,9 +90,11 @@ export function getApiKeyForProvider(provider: Provider): string {
       return import.meta.env.VITE_OPENROUTER_API_KEY || '';
     case 'flowise':
       return import.meta.env.VITE_FLOWISE_API_KEY || '';
-      case 'neura':
-        return import.meta.env.VITE_NEURA_ROUTER_API_KEY || '';      
-      default:
+    case 'neura':
+      return import.meta.env.VITE_NEURA_ROUTER_API_KEY || '';
+    case 'google':
+      return import.meta.env.VITE_GOOGLE_API_KEY || '';
+    default:
       return import.meta.env.VITE_GROQ_API_KEY || '';
   }
 }

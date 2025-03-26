@@ -1,4 +1,4 @@
-export type Provider = 'groq' | 'claude' | 'openai' | 'flowise' | 'openrouter' | 'neura';
+export type Provider = 'groq' | 'claude' | 'openai' | 'flowise' | 'openrouter' | 'neura' | 'google';
 
 export type Template = 'minimal' | 'vibrant' | 'elegant';
 

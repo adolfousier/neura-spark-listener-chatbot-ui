@@ -69,6 +69,7 @@ export function SettingsDialog() {
                 <SelectItem value="groq">Groq</SelectItem>
                 <SelectItem value="neura">Neura Router</SelectItem>
                 <SelectItem value="openrouter">Open Router</SelectItem>
+                <SelectItem value="google">Google</SelectItem>
                 <SelectItem value="flowise">Flowise</SelectItem>
                 <SelectItem value="claude">Anthropic</SelectItem>
                 <SelectItem value="openai">OpenAI</SelectItem>
@@ -137,6 +138,14 @@ export function SettingsDialog() {
                 {localSettings.provider === 'flowise' && (
                   <>
                     <SelectItem value="default">Default Chatflow</SelectItem>
+                  </>
+                )}
+                {localSettings.provider === 'google' && (
+                  <>
+                    <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
+                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
+                    <SelectItem value="code-gecko">Code Gecko</SelectItem>
+                    <SelectItem value="imagen-3.0-generate-001">Imagen 3.0 (Image Generation)</SelectItem>
                   </>
                 )}
               </SelectContent>

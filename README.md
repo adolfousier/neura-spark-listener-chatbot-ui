@@ -1,4 +1,3 @@
-
 # Neura AI Open Source Chatbot UI
 
 ## Overview
@@ -83,6 +82,7 @@ VITE_OPENAI_API_KEY=your_openai_api_key
 VITE_CLAUDE_API_KEY=your_claude_api_key
 VITE_FLOWISE_API_KEY=your_flowise_api_key
 VITE_OPENROUTER_API_KEY=your_openrouter_api_key
+VITE_GOOGLE_API_KEY=your_google_api_key
 
 # Database configuration
 DATABASE_URL="file:./dev.db"  # SQLite database path
@@ -90,6 +90,7 @@ DATABASE_URL="file:./dev.db"  # SQLite database path
 # Optional with defaults
 VITE_BACKEND_SERVICE_PROVIDER=groq  # Defaults to 'groq' if not provided
 VITE_GROQ_API_MODEL=deepseek-r1-distill-llama-70b  # Default model for Groq
+VITE_GOOGLE_API_MODEL=gemini-2.0-flash  # Default model for Google
 VITE_STREAM_ENABLED=true  # Enable/disable streaming responses
 VITE_REASONING_FORMAT=parsed  # Format for AI reasoning
 VITE_FLOWISE_CHATFLOW_ID=  # Flowise Chatflow ID

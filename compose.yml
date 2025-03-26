@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    image: open_source_chatbot_v0.2.5
+    image: open_source_chatbot_v0.2.6
     container_name: ${CONTAINER_NAME}
     ports:
       - "${VITE_PORT}:4173"
@@ -40,6 +40,11 @@ services:
 
       # Claude service settings
       - VITE_CLAUDE_API_KEY=${VITE_CLAUDE_API_KEY}
+
+      # Google configuration
+      - VITE_GOOGLE_API_KEY=${VITE_GOOGLE_API_KEY}
+      - VITE_GOOGLE_API_MODEL=${VITE_GOOGLE_API_MODEL}
+      - VITE_GOOGLE_API_URL=${VITE_GOOGLE_API_URL}
 
     volumes:
       - ./public:/app/public
