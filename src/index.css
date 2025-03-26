@@ -224,3 +224,44 @@
   }
 }
 
+/* Reasoning placeholder animation */
+.reasoning-placeholder {
+  display: flex;
+  align-items: center;
+  font-style: italic;
+  color: var(--muted-foreground);
+  opacity: 0.9;
+  padding: 0.5rem 0;
+}
+
+.reasoning-placeholder::after {
+  content: "...";
+  width: 1.25em;
+  animation: reasoning-dots 1.4s infinite;
+  display: inline-block;
+  text-align: left;
+  margin-left: 4px;
+}
+
+@keyframes reasoning-dots {
+  0%, 20% {
+    content: ".";
+  }
+  40%, 60% {
+    content: "..";
+  }
+  80%, 100% {
+    content: "...";
+  }
+}
+
+/* Template-specific reasoning placeholder styles */
+.template-vibrant .reasoning-placeholder {
+  color: var(--secondary-foreground);
+}
+
+.template-elegant .reasoning-placeholder {
+  color: var(--secondary-foreground);
+  font-weight: 500;
+}
+

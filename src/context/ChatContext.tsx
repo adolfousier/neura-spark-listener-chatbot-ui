@@ -361,6 +361,32 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         stream: settings.streamEnabled
       };
       
+      // For any provider without streaming, add a placeholder loading message
+      let placeholderMessageId = null;
+      if (!settings.streamEnabled) {
+        const placeholderMessage: Message = {
+          id: generateId(),
+          role: 'assistant',
+          content: `<div class="reasoning-placeholder">${settings.model} is reasoning...</div>`,
+          createdAt: new Date(),
+          tokenCount: 0
+        };
+        
+        placeholderMessageId = placeholderMessage.id;
+        
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConversationId 
+              ? {
+                  ...conv,
+                  messages: [...conv.messages, placeholderMessage],
+                  updatedAt: new Date()
+                } 
+              : conv
+          )
+        );
+      }
+      
       // Send request to API
       const response = await sendChatRequest(settings.provider, chatRequest);
       
@@ -441,26 +467,49 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         const nonStreamResponse = response as ChatResponse;
         const responseContent = nonStreamResponse.choices[0]?.message?.content || "No response from AI";
         
-        // Add the complete response as a new message
-        const assistantMessage: Message = {
-          id: generateId(),
-          role: 'assistant',
-          content: responseContent,
-          createdAt: new Date(),
-          tokenCount: responseContent.split(/\s+/).length
-        };
-        
-        setConversations(prev => 
-          prev.map(conv => 
-            conv.id === currentConversationId 
-              ? {
-                  ...conv,
-                  messages: [...conv.messages, assistantMessage],
-                  updatedAt: new Date()
-                } 
-              : conv
-          )
-        );
+        if (placeholderMessageId) {
+          // Update the placeholder message with the real content
+          setConversations(prev => 
+            prev.map(conv => 
+              conv.id === currentConversationId 
+                ? {
+                    ...conv,
+                    messages: conv.messages.map(msg => 
+                      msg.id === placeholderMessageId
+                        ? { 
+                            ...msg, 
+                            content: responseContent,
+                            tokenCount: responseContent.split(/\s+/).length
+                          }
+                        : msg
+                    ),
+                    updatedAt: new Date()
+                  } 
+                : conv
+            )
+          );
+        } else {
+          // Add the complete response as a new message (for other providers)
+          const assistantMessage: Message = {
+            id: generateId(),
+            role: 'assistant',
+            content: responseContent,
+            createdAt: new Date(),
+            tokenCount: responseContent.split(/\s+/).length
+          };
+          
+          setConversations(prev => 
+            prev.map(conv => 
+              conv.id === currentConversationId 
+                ? {
+                    ...conv,
+                    messages: [...conv.messages, assistantMessage],
+                    updatedAt: new Date()
+                  } 
+                : conv
+            )
+          );
+        }
       }
     } catch (error) {
       console.error("Error sending message:", error);

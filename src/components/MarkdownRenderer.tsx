@@ -24,6 +24,19 @@ interface CodeComponentProps {
 }
 
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
+  // Check if content contains HTML placeholder
+  const isPlaceholder = content.includes('<div class="reasoning-placeholder">');
+  
+  // If it's a placeholder, render with dangerouslySetInnerHTML
+  if (isPlaceholder) {
+    return (
+      <div 
+        className={cn('prose prose-sm dark:prose-invert max-w-none break-words', className)}
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  }
+  
   // Initialize mermaid with configuration
   React.useEffect(() => {
     console.log('Initializing Mermaid with configuration');
