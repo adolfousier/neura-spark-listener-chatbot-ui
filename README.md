@@ -28,7 +28,8 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 - **Messages Token Counter**: Displays the number of tokens used in each message.
 - **Messages Copying**: Users can easily copy AI-generated or user messages.
 - **Stop Button**: Stop any stream at any time with a stop button in the text input area.
-- **Scroll to Bottom**: Display a scroll to bottom once users scroll up in the conversation
+- **Scroll to Bottom**: Display a scroll to bottom once users scroll up in the conversation 
+- **Scroll While Stream**:  Allow users to scroll while streaming 
 - **Markdown Support**: Responses are displayed with Markdown formatting to improve readability and presentation.
 Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
 - **Persistent Storage**: Database-backed conversation history using Prisma ORM
