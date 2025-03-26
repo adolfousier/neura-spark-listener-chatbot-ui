@@ -1,5 +1,4 @@
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Conversation, Message as MessageType } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,7 +10,7 @@ import { countTokens } from "@/lib/tokenizer";
 import { useToast } from "@/hooks/use-toast";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { useChat } from "@/context/ChatContext";
-
+import { useTheme } from "@/hooks/use-theme";
 
 interface MessageListProps {
   conversation: Conversation;
@@ -22,63 +21,83 @@ export function MessageList({ conversation, className }: MessageListProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isStreaming } = useChat();
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [showButton, setShowButton] = useState(false);
   
-  // Track if user has manually scrolled up during streaming
+  // Get theme styles
+  const { template } = useTheme();
+  
+  const getButtonStyle = () => {
+    switch (template) {
+      case 'vibrant':
+        return 'bg-[#8B5CF6] hover:bg-[#7C3AED] text-white';
+      case 'elegant':
+        return 'bg-[#0891B2] hover:bg-[#0E7490] text-white';
+      case 'minimal':
+      default:
+        return 'bg-primary text-primary-foreground hover:bg-primary/90';
+    }
+  };
+  
+  // Simple scroll to bottom function
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setShowButton(false);
+  }, []);
+  
+  // Only scroll to bottom when a new message is added (not during streaming)
+  useEffect(() => {
+    if (!isStreaming) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [conversation.messages.length, isStreaming]);
+
+  // Add global scroll handler
   useEffect(() => {
     const handleScroll = () => {
-      if (scrollAreaRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
-        // If user scrolled up more than 100px from bottom, disable auto-scroll
-        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-        setAutoScroll(isNearBottom);
-      }
+      if (!scrollAreaRef.current) return;
+      
+      // We're targeting the parent element which contains the shadcn ScrollArea
+      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (!viewport) return;
+      
+      const { scrollTop, scrollHeight, clientHeight } = viewport as HTMLElement;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      
+      // Show button only when scrolled up (more than 100px from bottom)
+      setShowButton(distanceFromBottom > 100);
     };
     
-    const scrollArea = scrollAreaRef.current;
-    if (scrollArea) {
-      scrollArea.addEventListener('scroll', handleScroll);
-      return () => scrollArea.removeEventListener('scroll', handleScroll);
+    // Find the element and attach listener
+    const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll);
+      return () => scrollElement.removeEventListener('scroll', handleScroll);
     }
   }, []);
 
-  useEffect(() => {
-    // Only auto-scroll if enabled or if not currently streaming
-    if (autoScroll || !isStreaming) {
-      scrollToBottom();
-    }
-  }, [conversation.messages, autoScroll, isStreaming]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-  
-  // Function to manually scroll to bottom (can be triggered by a button if needed)
-  const handleScrollToBottom = () => {
-    setAutoScroll(true);
-    scrollToBottom();
-  };
-
   return (
-    <div className="relative h-full">
-      <ScrollArea className={cn("h-full", className)} ref={scrollAreaRef}>
-        <div className="flex flex-col p-4 pb-8">
+    <div className="relative h-full" ref={scrollAreaRef}>
+      <ScrollArea className={cn("h-full custom-scrollbar", className)}>
+        <div className="flex flex-col p-4 pb-24">
           {conversation.messages.map((message) => (
             <Message key={message.id} message={message} />
           ))}
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} className="h-1" />
         </div>
       </ScrollArea>
       
-      {/* Scroll to bottom button - only shown when streaming and user has scrolled up */}
-      {isStreaming && !autoScroll && (
+      {showButton && (
         <Button
-          className="absolute bottom-4 right-4 rounded-full shadow-md"
+          className={cn(
+            "absolute bottom-16 right-4 rounded-md shadow-lg",
+            getButtonStyle(),
+            "w-10 h-10"
+          )}
           size="icon"
-          onClick={handleScrollToBottom}
-          title="Scroll to latest message"
+          onClick={scrollToBottom}
+          aria-label="Scroll to bottom"
         >
-          <ArrowDown className="h-4 w-4" />
+          <ArrowDown className="h-5 w-5" />
         </Button>
       )}
     </div>

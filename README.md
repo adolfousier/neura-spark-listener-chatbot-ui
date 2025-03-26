@@ -19,13 +19,15 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 ## Features
 
 - **Switch Easily Multiple AI Providers**: Seamlessly switch between Groq, Neura, Claude, Flowise, OpenRouter or OpenAI
-- **Customized System Prompts**: Provide custom instructions to the AI model that will be applied to all conversations
+- **System Prompt Management**: Easily manage and switch between multiple system prompts.
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
 - **Dark/Light Mode**: Each template has both light and dark variants
 - **Conversation Management**: Save, browse, and manage multiple chat conversations
+- **Clear Conversation History**: Easily clear the entire chat history with a single button.
 - **Auto-fit Input**: Automatically expands as you type, providing a comfortable writing experience while maintaining a clean interface.
 - **Messages Token Counter**: Displays the number of tokens used in each message.
 - **Messages Copying**: Users can easily copy AI-generated or user messages.
+- **Stop Button**: Stop any stream at any time with a stop button in the text input area.
 - **Markdown Support**: Responses are displayed with Markdown formatting to improve readability and presentation.
 Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
 - **Persistent Storage**: Database-backed conversation history using Prisma ORM

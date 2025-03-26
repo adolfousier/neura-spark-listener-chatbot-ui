@@ -69,10 +69,10 @@ export function SettingsDialog() {
               <SelectContent>
                 <SelectItem value="groq">Groq</SelectItem>
                 <SelectItem value="neura">Neura Router</SelectItem>
-                <SelectItem value="claude">Claude</SelectItem>
-                <SelectItem value="openai">OpenAI</SelectItem>
-                <SelectItem value="openrouter">OpenRouter</SelectItem>
+                <SelectItem value="openrouter">Open Router</SelectItem>
                 <SelectItem value="flowise">Flowise</SelectItem>
+                <SelectItem value="claude">Anthropic</SelectItem>
+                <SelectItem value="openai">OpenAI</SelectItem>
               </SelectContent>
             </Select>
           </div>
