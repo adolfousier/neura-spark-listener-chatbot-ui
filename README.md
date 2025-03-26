@@ -32,6 +32,7 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 - **Scroll While Stream**:  Allow users to scroll while streaming 
 - **Markdown Support**: Responses are displayed with Markdown formatting to improve readability and presentation.
 Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
+- **Edit Chat History Mesages**: Supports edit any message in the chat to get back at any point oin history
 - **Persistent Storage**: Database-backed conversation history using Prisma ORM
 - **Message Streaming**: Real-time message streaming for a responsive chat experience
 - **Responsive Design**: Works smoothly on desktop and mobile devices

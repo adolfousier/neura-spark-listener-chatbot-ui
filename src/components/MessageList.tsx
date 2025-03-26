@@ -20,10 +20,11 @@ interface MessageListProps {
 export function MessageList({ conversation, className }: MessageListProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { isStreaming } = useChat();
+  const { isStreaming, sendMessage } = useChat();
   const [showButton, setShowButton] = useState(false);
   const previousStreamingRef = useRef(isStreaming);
   const userScrolledRef = useRef(false);
+  const { toast } = useToast();
   
   // Get theme styles
   const { template } = useTheme();
@@ -98,12 +99,57 @@ export function MessageList({ conversation, className }: MessageListProps) {
     previousStreamingRef.current = isStreaming;
   }, [isStreaming]);
 
+  // Handle editing a message
+  const handleEditMessage = useCallback((messageId: string, newContent: string) => {
+    // Find the edited message index
+    const messageIndex = conversation.messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return;
+    
+    // Get the message that was edited
+    const editedMessage = conversation.messages[messageIndex];
+    
+    // Make sure it's a user message
+    if (editedMessage.role !== "user") {
+      toast({
+        title: "Cannot edit assistant messages",
+        description: "Only your messages can be edited.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Calculate the context window - last 5 message pairs before the edited message
+    const contextStartIndex = Math.max(0, messageIndex - 10); // 5 pairs = 10 messages
+    const contextEndIndex = messageIndex;
+    
+    // Get the context messages
+    const contextMessages = conversation.messages.slice(contextStartIndex, contextEndIndex);
+    
+    // Create a new message list with the context + edited message
+    const newMessageList = [
+      ...contextMessages,
+      { ...editedMessage, content: newContent }
+    ];
+
+    // Send the edited message to regenerate the response
+    sendMessage(newContent, newMessageList, messageIndex);
+    
+    toast({
+      title: "Message edited",
+      description: "Regenerating response based on your edit...",
+    });
+  }, [conversation.messages, sendMessage, toast]);
+
   return (
     <div className="relative h-full" ref={scrollAreaRef}>
       <ScrollArea className={cn("h-full custom-scrollbar", className)}>
         <div className="flex flex-col p-4 pb-24">
           {conversation.messages.map((message) => (
-            <Message key={message.id} message={message} />
+            <Message 
+              key={message.id} 
+              message={message} 
+              onEditMessage={handleEditMessage}
+            />
           ))}
           <div ref={messagesEndRef} className="h-1" />
         </div>
@@ -129,16 +175,19 @@ export function MessageList({ conversation, className }: MessageListProps) {
 
 interface MessageProps {
   message: MessageType;
+  onEditMessage?: (messageId: string, newContent: string) => void;
 }
 
-function Message({ message }: MessageProps) {
+function Message({ message, onEditMessage }: MessageProps) {
   const isUser = message.role === "user";
   const [isHovered, setIsHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState(message.content);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
   
   // Use the tokenCount from the message object or calculate it if not available
-// In the Message component, update the tokenCount calculation:
-const tokenCount = message.tokenCount || countTokens(message.content);
+  const tokenCount = message.tokenCount || countTokens(message.content);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(message.content);
@@ -147,6 +196,42 @@ const tokenCount = message.tokenCount || countTokens(message.content);
       description: "Message content has been copied to clipboard",
       duration: 2000,
     });
+  };
+
+  // Handle starting edit mode
+  const handleEdit = () => {
+    setEditedContent(message.content);
+    setIsEditing(true);
+    // Focus the textarea after it's rendered
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(message.content.length, message.content.length);
+      }
+    }, 50);
+  };
+
+  // Handle saving the edit
+  const handleSaveEdit = () => {
+    if (onEditMessage && editedContent.trim() !== message.content.trim()) {
+      onEditMessage(message.id, editedContent);
+    }
+    setIsEditing(false);
+  };
+
+  // Handle canceling the edit
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedContent(message.content);
+  };
+
+  // Handle keyboard shortcuts for saving/canceling
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      handleSaveEdit();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
   };
 
   return (
@@ -173,33 +258,84 @@ const tokenCount = message.tokenCount || countTokens(message.content);
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="text-sm overflow-hidden">
-          <MarkdownRenderer content={message.content} />
-        </div>
+        {isEditing && isUser ? (
+          <div className="w-full">
+            <textarea
+              ref={textareaRef}
+              className="w-full min-h-[100px] p-2 text-sm bg-background text-foreground border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              value={editedContent}
+              onChange={(e) => setEditedContent(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Edit your message..."
+            />
+            <div className="flex justify-end mt-2 space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={handleSaveEdit}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm overflow-hidden">
+            <MarkdownRenderer content={message.content} />
+          </div>
+        )}
+        
         <div className="text-xs opacity-50 mt-1 flex items-center gap-2">
           <span>{formatDate(message.createdAt)}</span>
           <span>•</span>
           <span>{tokenCount} tokens</span>
         </div>
         
-        {isHovered && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="absolute bottom-1 right-1 opacity-70 hover:opacity-100 h-8 w-8 shadow-sm rounded-xl"
-                  onClick={copyToClipboard}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Copy message</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        {isHovered && !isEditing && (
+          <div className="absolute bottom-1 right-1 flex gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="opacity-70 hover:opacity-100 h-8 w-8 shadow-sm rounded-xl"
+                    onClick={copyToClipboard}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy message</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            {isUser && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="opacity-70 hover:opacity-100 h-8 w-8 shadow-sm rounded-xl"
+                      onClick={handleEdit}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit message</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         )}
       </div>
       

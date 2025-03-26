@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Conversation, Message, Settings, Provider, Template } from '@/types';
+import { Conversation, Message, Settings, Provider, Template, ChatResponse, ChatRequest } from '@/types';
 import { generateId, getDefaultSettings, getFirstMessage } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
+import { sendChatRequest, streamChatResponse } from "@/services/apiService";
 
 type ChatContextType = {
   conversations: Conversation[];
@@ -21,6 +22,7 @@ type ChatContextType = {
   updateTheme: (template: Template, darkMode: boolean) => void;
   startStreaming: () => AbortController;
   stopStreaming: () => void;
+  sendMessage: (content: string, contextMessages?: Message[], editedMessageIndex?: number) => Promise<void>;
 };
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -244,6 +246,245 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     setIsStreaming(false);
   }, [streamController]);
 
+  const sendMessage = useCallback(async (content: string, contextMessages?: Message[], editedMessageIndex?: number) => {
+    if (!content.trim() || !currentConversationId) return;
+    
+    // Find current conversation
+    const conversation = conversations.find(conv => conv.id === currentConversationId);
+    if (!conversation) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // If we're editing a message, we need to slice the conversation
+      // and replace messages after the edited message
+      if (editedMessageIndex !== undefined && contextMessages) {
+        // Get the original conversation messages up to the edited message
+        const originalMessages = conversation.messages.slice(0, editedMessageIndex);
+        
+        // Get the user message that was edited
+        const editedUserMessage = contextMessages[contextMessages.length - 1];
+        
+        // Create a new user message in place of the old one
+        const newUserMessage: Message = {
+          ...editedUserMessage,
+          content: content
+        };
+        
+        // Update the conversation with the new messages up to the edited message
+        // plus the edited message itself
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConversationId 
+              ? {
+                  ...conv,
+                  messages: [...originalMessages, newUserMessage],
+                  updatedAt: new Date()
+                } 
+              : conv
+          )
+        );
+      } else {
+        // Not editing, just add the new user message
+        const userMessage: Message = {
+          id: generateId(),
+          role: 'user',
+          content: content,
+          createdAt: new Date(),
+          tokenCount: content.split(/\s+/).length
+        };
+        
+        // Add the user message to the conversation
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConversationId 
+              ? {
+                  ...conv,
+                  messages: [...conv.messages, userMessage],
+                  updatedAt: new Date(),
+                  title: conv.title === 'New Conversation' 
+                    ? content.slice(0, 30) + (content.length > 30 ? '...' : '') 
+                    : conv.title
+                } 
+              : conv
+          )
+        );
+      }
+      
+      // Prepare messages array for API request
+      const messages = [];
+      
+      // Add system prompt if it exists
+      if (settings.systemPrompt && settings.systemPrompt.trim() !== '') {
+        messages.push({ role: "system", content: settings.systemPrompt });
+      }
+      
+      // If we're editing and have context messages, use those
+      // Otherwise use the full conversation history
+      if (editedMessageIndex !== undefined && contextMessages) {
+        // Add context messages
+        messages.push(
+          ...contextMessages.map(m => ({
+            role: m.role,
+            content: m.content
+          }))
+        );
+      } else {
+        // Add regular conversation history
+        const updatedConversation = conversations.find(conv => conv.id === currentConversationId);
+        if (updatedConversation) {
+          messages.push(
+            ...updatedConversation.messages.map(m => ({
+              role: m.role,
+              content: m.content
+            }))
+          );
+        }
+      }
+      
+      // Create the chat request
+      const chatRequest = {
+        messages,
+        model: settings.model,
+        temperature: settings.temperature,
+        stream: settings.streamEnabled
+      };
+      
+      // Send request to API
+      const response = await sendChatRequest(settings.provider, chatRequest);
+      
+      if (settings.streamEnabled && response instanceof ReadableStream) {
+        // Handle streaming response
+        let responseContent = '';
+        
+        // Create a new assistant message
+        const assistantMessage: Message = {
+          id: generateId(),
+          role: 'assistant',
+          content: '',
+          createdAt: new Date(),
+          tokenCount: 0
+        };
+        
+        // Add the empty message that will be updated with streaming content
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConversationId 
+              ? {
+                  ...conv,
+                  messages: [...conv.messages, assistantMessage],
+                  updatedAt: new Date()
+                } 
+              : conv
+          )
+        );
+        
+        // Start streaming and get the controller for cancellation
+        const controller = startStreaming();
+        
+        try {
+          // Stream the response and update the message
+          const stream = streamChatResponse(response);
+          
+          for await (const chunk of stream) {
+            // Check if streaming was cancelled
+            if (controller.signal.aborted) {
+              break;
+            }
+            
+            responseContent += chunk;
+            
+            // Calculate token count
+            const tokenCount = responseContent.split(/\s+/).length;
+            
+            // Update the message with the current content
+            setConversations(prev => 
+              prev.map(conv => 
+                conv.id === currentConversationId 
+                  ? {
+                      ...conv,
+                      messages: conv.messages.map(msg => 
+                        msg.id === assistantMessage.id
+                          ? { 
+                              ...msg, 
+                              content: responseContent,
+                              tokenCount
+                            }
+                          : msg
+                      ),
+                      updatedAt: new Date()
+                    } 
+                  : conv
+              )
+            );
+          }
+        } catch (error) {
+          if (error.name !== 'AbortError') {
+            throw error;
+          }
+          // If it's an AbortError, we just stop the streaming gracefully
+          console.log('Streaming was cancelled by user');
+        }
+      } else {
+        // Handle non-streaming response
+        const nonStreamResponse = response as ChatResponse;
+        const responseContent = nonStreamResponse.choices[0]?.message?.content || "No response from AI";
+        
+        // Add the complete response as a new message
+        const assistantMessage: Message = {
+          id: generateId(),
+          role: 'assistant',
+          content: responseContent,
+          createdAt: new Date(),
+          tokenCount: responseContent.split(/\s+/).length
+        };
+        
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConversationId 
+              ? {
+                  ...conv,
+                  messages: [...conv.messages, assistantMessage],
+                  updatedAt: new Date()
+                } 
+              : conv
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to send message",
+        variant: "destructive",
+      });
+      
+      // Add an error message
+      const errorMessage: Message = {
+        id: generateId(),
+        role: 'assistant',
+        content: "Sorry, I encountered an error. Please try again.",
+        createdAt: new Date(),
+        tokenCount: 10
+      };
+      
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === currentConversationId 
+            ? {
+                ...conv,
+                messages: [...conv.messages, errorMessage],
+                updatedAt: new Date()
+              } 
+            : conv
+        )
+      );
+    } finally {
+      setIsLoading(false);
+      stopStreaming(); // Ensure streaming state is reset
+    }
+  }, [conversations, currentConversationId, generateId, setConversations, settings, startStreaming, stopStreaming, toast]);
+
   const value = {
     conversations,
     currentConversationId,
@@ -262,6 +503,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     updateTheme,
     startStreaming,
     stopStreaming,
+    sendMessage,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
