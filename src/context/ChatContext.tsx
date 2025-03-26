@@ -8,6 +8,8 @@ type ChatContextType = {
   currentConversationId: string | null;
   settings: Settings;
   isLoading: boolean;
+  isStreaming: boolean;
+  streamController: AbortController | null;
   setSettings: (settings: Settings) => void;
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
   createNewConversation: (initialMessage?: string) => string;
@@ -17,6 +19,8 @@ type ChatContextType = {
   renameConversation: (id: string, newTitle: string) => void;
   clearConversations: () => void;
   updateTheme: (template: Template, darkMode: boolean) => void;
+  startStreaming: () => AbortController;
+  stopStreaming: () => void;
 };
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -26,6 +30,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [settings, setSettings] = useState<Settings>(getDefaultSettings());
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamController, setStreamController] = useState<AbortController | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -221,11 +227,30 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, [toast]);
 
+  // Function to start streaming and return an AbortController for cancellation
+  const startStreaming = useCallback(() => {
+    const controller = new AbortController();
+    setStreamController(controller);
+    setIsStreaming(true);
+    return controller;
+  }, []);
+
+  // Function to stop streaming
+  const stopStreaming = useCallback(() => {
+    if (streamController) {
+      streamController.abort();
+      setStreamController(null);
+    }
+    setIsStreaming(false);
+  }, [streamController]);
+
   const value = {
     conversations,
     currentConversationId,
     settings,
     isLoading,
+    isStreaming,
+    streamController,
     setSettings,
     setConversations,
     createNewConversation,
@@ -235,6 +260,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     renameConversation,
     clearConversations,
     updateTheme,
+    startStreaming,
+    stopStreaming,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

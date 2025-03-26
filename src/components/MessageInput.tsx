@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useChat } from "@/context/ChatContext";
 import { sendChatRequest, streamChatResponse } from "@/services/apiService";
 import { useToast } from "@/hooks/use-toast";
-import { SendHorizontal } from "lucide-react";
+import { SendHorizontal, Square } from "lucide-react";
 import { ChatResponse } from "@/types";
 import { generateId } from "@/lib/utils";
 
@@ -13,7 +13,16 @@ export function MessageInput() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReasoning, setIsReasoning] = useState(false);
-  const { addMessage, settings, conversations, currentConversationId, setConversations } = useChat();
+  const { 
+    addMessage, 
+    settings, 
+    conversations, 
+    currentConversationId, 
+    setConversations,
+    isStreaming,
+    startStreaming,
+    stopStreaming
+  } = useChat();
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -99,37 +108,53 @@ export function MessageInput() {
           )
         );
         
-        // Stream the response and update the message
-        const stream = streamChatResponse(response);
+        // Start streaming and get the controller for cancellation
+        const controller = startStreaming();
         
-        for await (const chunk of stream) {
-          responseContent += chunk;
+        try {
+          // Stream the response and update the message
+          const stream = streamChatResponse(response);
           
-          // Update the message with the current content and recalculate token count
-          const words = responseContent
-            .trim()
-            .split(/\s+|[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/) 
-            .filter(word => word.length > 0);
-          
-          setConversations(prev => 
-            prev.map(conv => 
-              conv.id === currentConversationId 
-                ? {
-                    ...conv,
-                    messages: conv.messages.map(msg => 
-                      msg.id === assistantMessage.id
-                        ? { 
-                            ...msg, 
-                            content: responseContent,
-                            tokenCount: words.length 
-                          }
-                        : msg
-                    ),
-                    updatedAt: new Date()
-                  } 
-                : conv
-            )
-          );
+          for await (const chunk of stream) {
+            // Check if streaming was cancelled
+            if (controller.signal.aborted) {
+              break;
+            }
+            
+            responseContent += chunk;
+            
+            // Update the message with the current content and recalculate token count
+            const words = responseContent
+              .trim()
+              .split(/\s+|[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/) 
+              .filter(word => word.length > 0);
+            
+            setConversations(prev => 
+              prev.map(conv => 
+                conv.id === currentConversationId 
+                  ? {
+                      ...conv,
+                      messages: conv.messages.map(msg => 
+                        msg.id === assistantMessage.id
+                          ? { 
+                              ...msg, 
+                              content: responseContent,
+                              tokenCount: words.length 
+                            }
+                          : msg
+                      ),
+                      updatedAt: new Date()
+                    } 
+                  : conv
+              )
+            );
+          }
+        } catch (error) {
+          if (error.name !== 'AbortError') {
+            throw error;
+          }
+          // If it's an AbortError, we just stop the streaming gracefully
+          console.log('Streaming was cancelled by user');
         }
       } else if (!settings.streamEnabled && !(response instanceof ReadableStream)) {
         // Handle non-streaming response
@@ -152,6 +177,7 @@ export function MessageInput() {
     } finally {
       setIsSubmitting(false);
       setIsReasoning(false);
+      stopStreaming(); // Ensure streaming state is reset
     }
   };
 
@@ -174,9 +200,23 @@ export function MessageInput() {
         />
         {isReasoning ? (
           <div className="absolute right-2 flex items-center justify-center">
-            <div className="h-8 w-8 flex items-center justify-center">
-              <div className="animate-pulse h-4 w-4 bg-primary rounded-full"></div>
-            </div>
+            {isStreaming ? (
+              <Button 
+                type="button" 
+                size="icon" 
+                variant="destructive"
+                className="h-8 w-8" 
+                onClick={() => stopStreaming()}
+                title="Stop generation"
+              >
+                <Square className="h-4 w-4" />
+                <span className="sr-only">Stop</span>
+              </Button>
+            ) : (
+              <div className="h-8 w-8 flex items-center justify-center">
+                <div className="animate-pulse h-4 w-4 bg-primary rounded-full"></div>
+              </div>
+            )}
           </div>
         ) : (
           <Button 

@@ -6,10 +6,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Copy } from "lucide-react";
+import { Copy, ArrowDown } from "lucide-react";
 import { countTokens } from "@/lib/tokenizer";
 import { useToast } from "@/hooks/use-toast";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { useChat } from "@/context/ChatContext";
 
 
 interface MessageListProps {
@@ -20,24 +21,67 @@ interface MessageListProps {
 export function MessageList({ conversation, className }: MessageListProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { isStreaming } = useChat();
+  const [autoScroll, setAutoScroll] = useState(true);
+  
+  // Track if user has manually scrolled up during streaming
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollAreaRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
+        // If user scrolled up more than 100px from bottom, disable auto-scroll
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+        setAutoScroll(isNearBottom);
+      }
+    };
+    
+    const scrollArea = scrollAreaRef.current;
+    if (scrollArea) {
+      scrollArea.addEventListener('scroll', handleScroll);
+      return () => scrollArea.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [conversation.messages]);
+    // Only auto-scroll if enabled or if not currently streaming
+    if (autoScroll || !isStreaming) {
+      scrollToBottom();
+    }
+  }, [conversation.messages, autoScroll, isStreaming]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+  
+  // Function to manually scroll to bottom (can be triggered by a button if needed)
+  const handleScrollToBottom = () => {
+    setAutoScroll(true);
+    scrollToBottom();
+  };
 
   return (
-    <ScrollArea className={cn("h-full", className)} ref={scrollAreaRef}>
-      <div className="flex flex-col p-4 pb-8">
-        {conversation.messages.map((message) => (
-          <Message key={message.id} message={message} />
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-    </ScrollArea>
+    <div className="relative h-full">
+      <ScrollArea className={cn("h-full", className)} ref={scrollAreaRef}>
+        <div className="flex flex-col p-4 pb-8">
+          {conversation.messages.map((message) => (
+            <Message key={message.id} message={message} />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
+      
+      {/* Scroll to bottom button - only shown when streaming and user has scrolled up */}
+      {isStreaming && !autoScroll && (
+        <Button
+          className="absolute bottom-4 right-4 rounded-full shadow-md"
+          size="icon"
+          onClick={handleScrollToBottom}
+          title="Scroll to latest message"
+        >
+          <ArrowDown className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
   );
 }
 
