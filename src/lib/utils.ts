@@ -31,7 +31,7 @@ export function getDefaultSettings(): Settings {
   
   // Set appropriate default model based on provider
   if (provider === 'google') {
-    defaultModel = import.meta.env.VITE_GOOGLE_API_MODEL || 'gemini-2.0-flash';
+    defaultModel = import.meta.env.VITE_GOOGLE_API_MODEL || 'gemini-2.5-pro-exp-03-25';
   }
   
   return {
@@ -44,6 +44,7 @@ export function getDefaultSettings(): Settings {
     darkMode: false,
     systemPrompt: import.meta.env.VITE_DEFAULT_SYSTEM_PROMPT || '',
     contextWindowSize: 5,
+    webSearchEnabled: false, // Web search disabled by default
   };
 }
 

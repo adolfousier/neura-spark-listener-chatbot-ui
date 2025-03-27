@@ -23,6 +23,7 @@ type ChatContextType = {
   startStreaming: () => AbortController;
   stopStreaming: () => void;
   sendMessage: (content: string, contextMessages?: Message[], editedMessageIndex?: number) => Promise<void>;
+  toggleWebSearch: () => void;
 };
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -356,7 +357,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       // Create the chat request
       const chatRequest = {
         messages,
-        model: settings.model,
+        model: settings.webSearchEnabled ? 
+          (import.meta.env.VITE_GOOGLE_API_MODEL || 'gemini-2.5-pro-exp-03-25') : 
+          settings.model,
         temperature: settings.temperature,
         stream: settings.streamEnabled
       };
@@ -387,8 +390,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         );
       }
       
-      // Send request to API
-      const response = await sendChatRequest(settings.provider, chatRequest);
+      // Send request to API - use Google provider when web search is enabled
+      const provider = settings.webSearchEnabled ? 'google' : settings.provider;
+      const response = await sendChatRequest(provider, chatRequest);
       
       if (settings.streamEnabled && response instanceof ReadableStream) {
         // Handle streaming response
@@ -545,6 +549,33 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [conversations, currentConversationId, generateId, setConversations, settings, startStreaming, stopStreaming, toast]);
 
+  const toggleWebSearch = useCallback(() => {
+    // Save previous settings when enabling web search
+    const prevSettings = { ...settings };
+    
+    setSettings(prev => {
+      const webSearchEnabled = !prev.webSearchEnabled;
+      
+      // Toggle between web search and regular mode
+      return {
+        ...prev,
+        webSearchEnabled,
+        // When enabling web search, switch to Google provider with Gemini model
+        provider: webSearchEnabled ? 'google' : prev.provider,
+        model: webSearchEnabled ? 
+          (import.meta.env.VITE_GOOGLE_API_MODEL || 'gemini-2.5-pro-exp-03-25') : 
+          prev.model
+      };
+    });
+    
+    toast({
+      title: settings.webSearchEnabled ? "Web Search Disabled" : "Web Search Enabled",
+      description: settings.webSearchEnabled ? 
+        "Using standard AI model without search." : 
+        "Using Gemini with real-time web search capabilities.",
+    });
+  }, [settings, toast]);
+
   const value = {
     conversations,
     currentConversationId,
@@ -564,6 +595,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     startStreaming,
     stopStreaming,
     sendMessage,
+    toggleWebSearch,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

@@ -1,4 +1,4 @@
-# Neura AI Open Source Chatbot UI
+# Neura AI Open Source Chatbot UI - The UX of ChatGPT in your Hands 🤝
 
 ## Overview
 
@@ -91,7 +91,7 @@ DATABASE_URL="file:./dev.db"  # SQLite database path
 VITE_BACKEND_SERVICE_PROVIDER=groq  # Defaults to 'groq' if not provided
 VITE_DEFAULT_SYSTEM_PROMPT=optional default system prompt 
 VITE_GROQ_API_MODEL=deepseek-r1-distill-llama-70b  # Default model for Groq
-VITE_GOOGLE_API_MODEL=gemini-2.0-flash  # Default model for Google
+VITE_GOOGLE_API_MODEL=gemini-2.5-pro-exp-03-25  # Default model for Google
 VITE_STREAM_ENABLED=true  # Enable/disable streaming responses
 VITE_REASONING_FORMAT=parsed  # Format for AI reasoning
 VITE_FLOWISE_CHATFLOW_ID=  # Flowise Chatflow ID

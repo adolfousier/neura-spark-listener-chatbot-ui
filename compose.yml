@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    image: open_source_chatbot_v0.2.6
+    image: open_source_chatbot_v0.2.7
     container_name: ${CONTAINER_NAME}
     ports:
       - "${VITE_PORT}:4173"

@@ -1,19 +1,19 @@
-
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { ModeToggle } from "./ModeToggle";
 import { SettingsDialog } from "./SettingsDialog";
 import { useChat } from "@/context/ChatContext";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle } from "lucide-react";
+import { Home, PlusCircle, Search, Globe } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HeaderProps {
   className?: string;
 }
 
 export function Header({ className }: HeaderProps) {
-  const { createNewConversation } = useChat();
+  const { createNewConversation, settings, toggleWebSearch } = useChat();
   const location = useLocation();
   
   return (
@@ -50,6 +50,26 @@ export function Header({ className }: HeaderProps) {
           <PlusCircle className="mr-2 h-4 w-4" />
           New Chat
         </Button>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleWebSearch}
+                aria-label="Toggle web search"
+                className={settings.webSearchEnabled ? "text-primary" : "text-muted-foreground hover:text-foreground"}
+              >
+                <Globe className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>{settings.webSearchEnabled ? "Disable web search" : "Enable web search"}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
         <ModeToggle />
         <SettingsDialog />
       </div>

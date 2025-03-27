@@ -28,6 +28,7 @@ export type Settings = {
   darkMode: boolean;
   systemPrompt: string;
   contextWindowSize: number; // Number of message pairs to include in context
+  webSearchEnabled: boolean; // Whether to use web search capability
 };
 
 export type ChatRequest = {

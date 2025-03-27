@@ -142,6 +142,7 @@ export function SettingsDialog() {
                 )}
                 {localSettings.provider === 'google' && (
                   <>
+                    <SelectItem value="gemini-2.5-pro-exp-03-25">Gemini 2.5 Pro Experimental 03-25</SelectItem>                  
                     <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
                     <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
                     <SelectItem value="code-gecko">Code Gecko</SelectItem>
