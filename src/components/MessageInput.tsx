@@ -1,4 +1,3 @@
-
 import { useState, FormEvent, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SendHorizontal, Square } from "lucide-react";
 import { ChatResponse } from "@/types";
 import { generateId } from "@/lib/utils";
+import { AudioRecordButton } from "@/components/AudioRecordButton";
 
 export function MessageInput() {
   const [message, setMessage] = useState("");
@@ -21,7 +21,8 @@ export function MessageInput() {
     setConversations,
     isStreaming,
     startStreaming,
-    stopStreaming
+    stopStreaming,
+    isInputDisabled
   } = useChat();
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -194,9 +195,9 @@ export function MessageInput() {
               handleSubmit(e);
             }
           }}
-          placeholder={isReasoning ? "AI is reasoning..." : "Type your message..."}
+          placeholder={isReasoning ? "AI is reasoning..." : isInputDisabled ? "Processing voice message..." : "Type your message..."}
           className="pr-14 min-h-[60px] max-h-[200px] resize-none"
-          disabled={isSubmitting || isReasoning}
+          disabled={isSubmitting || isReasoning || isInputDisabled}
         />
         {isReasoning ? (
           <div className="absolute right-2 flex items-center justify-center">
@@ -219,19 +220,28 @@ export function MessageInput() {
             )}
           </div>
         ) : (
-          <Button 
-            type="submit" 
-            size="icon" 
-            className="absolute right-2" 
-            disabled={isSubmitting || isReasoning || !message.trim()}
-          >
-            <SendHorizontal className="h-5 w-5" />
-            <span className="sr-only">Send</span>
-          </Button>
+          <div className="absolute right-2 flex items-center space-x-2">
+            <AudioRecordButton />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={isSubmitting || isReasoning || !message.trim() || isInputDisabled}
+            >
+              <SendHorizontal className="h-5 w-5" />
+              <span className="sr-only">Send</span>
+            </Button>
+          </div>
         )}
       </div>
-      <div className="text-xs text-muted-foreground mt-2 text-center opacity-75">
-        AI powered by {settings.provider.charAt(0).toUpperCase() + settings.provider.slice(1)} • Model: {settings.model}
+      
+      <div className="flex justify-between items-center mt-2">
+        <div className="text-xs text-muted-foreground">
+          {message.length > 0 ? `${message.length} characters` : ''}
+        </div>
+        <div className="text-xs text-muted-foreground opacity-75 text-center flex-grow mx-auto">
+          AI powered by {settings.provider.charAt(0).toUpperCase() + settings.provider.slice(1)} • Model: {settings.model}
+        </div>
+        <div className="text-xs text-muted-foreground w-20"></div>
       </div>
     </form>
   );

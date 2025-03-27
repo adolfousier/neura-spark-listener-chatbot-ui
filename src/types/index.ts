@@ -8,6 +8,7 @@ export type Message = {
   content: string;
   createdAt: Date;
   tokenCount?: number; // Optional token count field
+  audioUrl?: string;   // Optional URL to the audio version of the message
 };
 
 export type Conversation = {
@@ -29,6 +30,7 @@ export type Settings = {
   systemPrompt: string;
   contextWindowSize: number; // Number of message pairs to include in context
   webSearchEnabled: boolean; // Whether to use web search capability
+  audioResponseEnabled: boolean; // Whether to convert AI responses to speech
 };
 
 export type ChatRequest = {

@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { Conversation, Message, Settings, Provider, Template, ChatResponse, ChatRequest } from '@/types';
 import { generateId, getDefaultSettings, getFirstMessage } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
 import { sendChatRequest, streamChatResponse } from "@/services/apiService";
+import { convertTextToSpeech, playAudio, convertAndUploadTextToSpeech } from "@/services/audioService";
 
 type ChatContextType = {
   conversations: Conversation[];
@@ -10,6 +11,7 @@ type ChatContextType = {
   settings: Settings;
   isLoading: boolean;
   isStreaming: boolean;
+  isInputDisabled: boolean;
   streamController: AbortController | null;
   setSettings: (settings: Settings) => void;
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
@@ -22,11 +24,36 @@ type ChatContextType = {
   updateTheme: (template: Template, darkMode: boolean) => void;
   startStreaming: () => AbortController;
   stopStreaming: () => void;
-  sendMessage: (content: string, contextMessages?: Message[], editedMessageIndex?: number) => Promise<void>;
+  sendMessage: (content: string, contextMessages?: Message[], editedMessageIndex?: number, returnResponse?: boolean) => Promise<{ content: string } | void>;
   toggleWebSearch: () => void;
+  toggleAudioResponse: () => void;
+  setIsInputDisabled: (disabled: boolean) => void;
 };
 
-const ChatContext = createContext<ChatContextType | undefined>(undefined);
+const ChatContext = createContext<ChatContextType>({
+  conversations: [],
+  currentConversationId: null,
+  settings: getDefaultSettings(),
+  isLoading: false,
+  isStreaming: false,
+  isInputDisabled: false,
+  streamController: null,
+  setSettings: () => {},
+  setConversations: () => {},
+  createNewConversation: () => '',
+  selectConversation: () => {},
+  addMessage: () => {},
+  deleteConversation: () => {},
+  renameConversation: () => {},
+  clearConversations: () => {},
+  updateTheme: () => {},
+  startStreaming: () => new AbortController(),
+  stopStreaming: () => {},
+  sendMessage: async () => {},
+  toggleWebSearch: () => {},
+  toggleAudioResponse: () => {},
+  setIsInputDisabled: () => {},
+});
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -34,6 +61,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [settings, setSettings] = useState<Settings>(getDefaultSettings());
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isInputDisabled, setIsInputDisabled] = useState(false);
   const [streamController, setStreamController] = useState<AbortController | null>(null);
   const { toast } = useToast();
 
@@ -247,72 +275,34 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     setIsStreaming(false);
   }, [streamController]);
 
-  const sendMessage = useCallback(async (content: string, contextMessages?: Message[], editedMessageIndex?: number) => {
-    if (!content.trim() || !currentConversationId) return;
-    
-    // Find current conversation
-    const conversation = conversations.find(conv => conv.id === currentConversationId);
-    if (!conversation) return;
+  /**
+   * Send a message to the AI and handle the response
+   * @param content Message content to send
+   * @param contextMessages Optional context messages to use instead of conversation history
+   * @param editedMessageIndex Optional index of message being edited
+   * @param returnResponse Optional flag to return the response content instead of adding to conversation
+   * @returns Promise that resolves when the message is sent and response received
+   */
+  const sendMessage = async (
+    content: string, 
+    contextMessages?: Message[],
+    editedMessageIndex?: number,
+    returnResponse?: boolean
+  ): Promise<{ content: string } | void> => {
+    if (!currentConversationId) {
+      const id = createNewConversation();
+      setCurrentConversationId(id);
+    }
     
     setIsLoading(true);
     
     try {
-      // If we're editing a message, we need to slice the conversation
-      // and replace messages after the edited message
-      if (editedMessageIndex !== undefined && contextMessages) {
-        // Get the original conversation messages up to the edited message
-        const originalMessages = conversation.messages.slice(0, editedMessageIndex);
-        
-        // Get the user message that was edited
-        const editedUserMessage = contextMessages[contextMessages.length - 1];
-        
-        // Create a new user message in place of the old one
-        const newUserMessage: Message = {
-          ...editedUserMessage,
-          content: content
-        };
-        
-        // Update the conversation with the new messages up to the edited message
-        // plus the edited message itself
-        setConversations(prev => 
-          prev.map(conv => 
-            conv.id === currentConversationId 
-              ? {
-                  ...conv,
-                  messages: [...originalMessages, newUserMessage],
-                  updatedAt: new Date()
-                } 
-              : conv
-          )
-        );
-      } else {
-        // Not editing, just add the new user message
-        const userMessage: Message = {
-          id: generateId(),
-          role: 'user',
-          content: content,
-          createdAt: new Date(),
-          tokenCount: content.split(/\s+/).length
-        };
-        
-        // Add the user message to the conversation
-        setConversations(prev => 
-          prev.map(conv => 
-            conv.id === currentConversationId 
-              ? {
-                  ...conv,
-                  messages: [...conv.messages, userMessage],
-                  updatedAt: new Date(),
-                  title: conv.title === 'New Conversation' 
-                    ? content.slice(0, 30) + (content.length > 30 ? '...' : '') 
-                    : conv.title
-                } 
-              : conv
-          )
-        );
+      // Add user message to conversation (unless we're editing)
+      if (editedMessageIndex === undefined) {
+        addMessage("user", content);
       }
       
-      // Prepare messages array for API request
+      // Prepare messages array with system prompt if available
       const messages = [];
       
       // Add system prompt if it exists
@@ -364,8 +354,23 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         stream: settings.streamEnabled
       };
       
+      // For special case where we need to return the response directly
+      if (returnResponse) {
+        // Send request to API without streaming - direct response needed
+        const provider = settings.webSearchEnabled ? 'google' : settings.provider;
+        const response = await sendChatRequest(provider, { ...chatRequest, stream: false });
+        
+        if (response instanceof ReadableStream) {
+          throw new Error("Streaming not supported when returnResponse is true");
+        }
+        
+        const responseContent = response.choices[0]?.message?.content || "No response from AI";
+        return { content: responseContent };
+      }
+      
       // For any provider without streaming, add a placeholder loading message
       let placeholderMessageId = null;
+      
       if (!settings.streamEnabled) {
         const placeholderMessage: Message = {
           id: generateId(),
@@ -514,6 +519,55 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
             )
           );
         }
+        
+        // If audio responses are enabled, convert the response to speech, upload to Azure and play it
+        if (settings.audioResponseEnabled) {
+          try {
+            // Get clean text for TTS by removing markdown and HTML
+            const cleanText = responseContent
+              .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+              .replace(/<[^>]*>/g, '') // Remove HTML tags
+              .replace(/\*\*|\*|__|\|_|#/g, '') // Remove markdown formatting
+              .replace(/!\[(.*?)\]\(.*?\)/g, 'Image: $1') // Replace image links
+              .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Replace markdown links with just the text
+              .replace(/\n\n+/g, '\n\n') // Condense multiple newlines
+              .trim();
+            
+            // Limit to first 250 words to keep audio reasonably short
+            const words = cleanText.split(/\s+/);
+            const limitedText = words.slice(0, 250).join(' ') + 
+              (words.length > 250 ? '... (continue reading for more)' : '');
+            
+            // Convert to speech, upload to Azure, and play
+            const { audioUrl, audioData } = await convertAndUploadTextToSpeech(limitedText);
+            
+            // Update the message with the audio URL
+            setConversations(prev => 
+              prev.map(conv => 
+                conv.id === currentConversationId 
+                  ? {
+                      ...conv,
+                      messages: conv.messages.map(msg => 
+                        msg.id === placeholderMessageId
+                          ? { 
+                              ...msg, 
+                              audioUrl
+                            }
+                          : msg
+                      ),
+                      updatedAt: new Date()
+                    } 
+                  : conv
+              )
+            );
+            
+            // Play the audio immediately
+            await playAudio(audioData);
+          } catch (error) {
+            console.error('Error processing audio response:', error);
+            // Don't show error to user - just fall back to text silently
+          }
+        }
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -547,7 +601,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(false);
       stopStreaming(); // Ensure streaming state is reset
     }
-  }, [conversations, currentConversationId, generateId, setConversations, settings, startStreaming, stopStreaming, toast]);
+  };
 
   const toggleWebSearch = useCallback(() => {
     // Save previous settings when enabling web search
@@ -576,12 +630,28 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, [settings, toast]);
 
-  const value = {
+  // Function to toggle audio responses
+  const toggleAudioResponse = useCallback(() => {
+    setSettings(prev => ({
+      ...prev,
+      audioResponseEnabled: !prev.audioResponseEnabled
+    }));
+    
+    toast({
+      title: settings.audioResponseEnabled ? "Audio Responses Disabled" : "Audio Responses Enabled",
+      description: settings.audioResponseEnabled ? 
+        "Assistant responses will be text only." : 
+        "Assistant responses will include speech audio.",
+    });
+  }, [settings, toast]);
+
+  const contextValue = useMemo(() => ({
     conversations,
     currentConversationId,
     settings,
     isLoading,
     isStreaming,
+    isInputDisabled,
     streamController,
     setSettings,
     setConversations,
@@ -596,9 +666,31 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     stopStreaming,
     sendMessage,
     toggleWebSearch,
-  };
+    toggleAudioResponse,
+    setIsInputDisabled,
+  }), [
+    conversations, 
+    currentConversationId, 
+    settings, 
+    isLoading, 
+    isStreaming,
+    isInputDisabled,
+    streamController,
+    createNewConversation,
+    selectConversation,
+    addMessage,
+    deleteConversation,
+    renameConversation,
+    clearConversations,
+    updateTheme,
+    startStreaming,
+    stopStreaming,
+    sendMessage,
+    toggleWebSearch,
+    toggleAudioResponse
+  ]);
 
-  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
+  return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
 };
 
 export const useChat = () => {

@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { useChat } from "@/context/ChatContext";
 import { useTheme } from "@/hooks/use-theme";
+import { MdPlayArrow, MdPause } from "react-icons/md";
 
 interface MessageListProps {
   conversation: Conversation;
@@ -184,6 +185,8 @@ function Message({ message, onEditMessage }: MessageProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(message.content);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
   
@@ -233,6 +236,32 @@ function Message({ message, onEditMessage }: MessageProps) {
     } else if (e.key === 'Escape') {
       handleCancelEdit();
     }
+  };
+
+  // Add audio playback functions
+  const toggleAudio = () => {
+    if (!audioRef.current || !message.audioUrl) return;
+    
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
+  };
+
+  const handleAudioError = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
+    console.error("Audio playback error:", e);
+    setIsPlaying(false);
+    toast({
+      title: "Audio playback error",
+      description: "Could not play this audio message",
+      variant: "destructive"
+    });
   };
 
   return (
@@ -290,6 +319,29 @@ function Message({ message, onEditMessage }: MessageProps) {
               </div>
             ) : (
               <div className="text-sm overflow-hidden">
+                {/* Add audio player if audioUrl exists and it's an assistant message */}
+                {message.audioUrl && !isUser && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-8 h-8 p-0 rounded-full"
+                      onClick={toggleAudio}
+                    >
+                      {isPlaying ? <MdPause className="w-5 h-5" /> : <MdPlayArrow className="w-5 h-5" />}
+                    </Button>
+                    <audio 
+                      ref={audioRef}
+                      src={message.audioUrl}
+                      onEnded={handleAudioEnded}
+                      onError={handleAudioError}
+                      className="hidden"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {isPlaying ? "Playing audio..." : "Play response audio"}
+                    </span>
+                  </div>
+                )}
                 <MarkdownRenderer content={message.content} />
               </div>
             )}

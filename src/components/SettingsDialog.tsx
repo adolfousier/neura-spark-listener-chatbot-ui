@@ -128,10 +128,11 @@ export function SettingsDialog() {
                 )}
                 {localSettings.provider === 'openrouter' && (
                   <>
+                    <SelectItem value="google/gemini-2.5-pro">Gemini 2.5 Pro 03-25</SelectItem>
                     <SelectItem value="openai/o3-mini">OpenAI o3-mini</SelectItem>
                     <SelectItem value="anthropic/claude-3.7-sonnet">Claude 3.7 Sonnet</SelectItem>
                     <SelectItem value="meta-llama/llama-3-70b-instruct">Llama 3 70B</SelectItem>
-                    <SelectItem value="google/gemini-2.0-flash-001">Gemini 2.0 Flash</SelectItem>
+                    <SelectItem value="google/gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
                     <SelectItem value="mistralai/mistral-large-2411">Mistral Large 2411</SelectItem>
                   </>
                 )}

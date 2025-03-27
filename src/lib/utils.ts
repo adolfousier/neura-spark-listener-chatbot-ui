@@ -31,7 +31,7 @@ export function getDefaultSettings(): Settings {
   
   // Set appropriate default model based on provider
   if (provider === 'google') {
-    defaultModel = import.meta.env.VITE_GOOGLE_API_MODEL || 'gemini-2.5-pro-exp-03-25';
+    defaultModel = import.meta.env.VITE_GOOGLE_API_MODEL || 'gemini-2.0-flash';
   }
   
   return {
@@ -45,6 +45,7 @@ export function getDefaultSettings(): Settings {
     systemPrompt: import.meta.env.VITE_DEFAULT_SYSTEM_PROMPT || '',
     contextWindowSize: 5,
     webSearchEnabled: false, // Web search disabled by default
+    audioResponseEnabled: false, // Audio responses disabled by default
   };
 }
 
@@ -111,4 +112,60 @@ export function getTemplateClass(template: string): string {
     default:
       return 'template-minimal';
   }
+}
+
+/**
+ * Gets the OpenAI API key for TTS
+ */
+export function getOpenAITTSApiKey(): string {
+  return import.meta.env.VITE_OPENAI_API_KEY || '';
+}
+
+/**
+ * Gets the TTS model to use
+ */
+export function getOpenAITTSModel(): string {
+  return import.meta.env.VITE_OPENAI_TTS_API_MODEL || 'gpt-4o-mini-tts';
+}
+
+/**
+ * Gets the TTS voice to use
+ */
+export function getOpenAITTSVoice(): string {
+  return import.meta.env.VITE_OPENAI_TTS_API_VOICE || 'alloy';
+}
+
+/**
+ * Gets the Groq API key for STT
+ */
+export function getGroqSTTApiKey(): string {
+  return import.meta.env.VITE_GROQ_API_KEY || '';
+}
+
+/**
+ * Gets the STT model to use
+ */
+export function getGroqSTTModel(): string {
+  return import.meta.env.VITE_GROQ_STT_API_MODEL || 'whisper-large-v3';
+}
+
+/**
+ * Gets the Azure Blob Storage container name
+ */
+export function getAzureStorageContainerName(): string {
+  return import.meta.env.VITE_AZURE_STORAGE_CONTAINER_ID || '';
+}
+
+/**
+ * Gets the Azure Blob Storage account name
+ */
+export function getAzureStorageAccountName(): string {
+  return import.meta.env.VITE_AZURE_STORAGE_ACCOUNT_NAME || '';
+}
+
+/**
+ * Gets the Azure Blob Storage SAS token
+ */
+export function getAzureStorageSasToken(): string {
+  return import.meta.env.VITE_AZURE_STORAGE_SAS_TOKEN || '';
 }

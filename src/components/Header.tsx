@@ -4,7 +4,7 @@ import { ModeToggle } from "./ModeToggle";
 import { SettingsDialog } from "./SettingsDialog";
 import { useChat } from "@/context/ChatContext";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, Search, Globe } from "lucide-react";
+import { Home, PlusCircle, Search, Globe, Volume2, VolumeX } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -13,7 +13,7 @@ interface HeaderProps {
 }
 
 export function Header({ className }: HeaderProps) {
-  const { createNewConversation, settings, toggleWebSearch } = useChat();
+  const { createNewConversation, settings, toggleWebSearch, toggleAudioResponse } = useChat();
   const location = useLocation();
   
   return (
@@ -66,6 +66,29 @@ export function Header({ className }: HeaderProps) {
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p>{settings.webSearchEnabled ? "Disable web search" : "Enable web search"}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleAudioResponse}
+                aria-label="Toggle audio responses"
+                className={settings.audioResponseEnabled ? "text-primary" : "text-muted-foreground hover:text-foreground"}
+              >
+                {settings.audioResponseEnabled ? (
+                  <Volume2 className="h-5 w-5 animate-pulse-icon" />
+                ) : (
+                  <VolumeX className="h-5 w-5" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>{settings.audioResponseEnabled ? "Disable audio responses" : "Enable audio responses"}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

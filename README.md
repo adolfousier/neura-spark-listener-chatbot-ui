@@ -10,6 +10,8 @@ Neura AI is a modern, customizable AI chatbot interface that supports persistent
 - **Google Gemini Web Research**: Select web mode if you to research in real time with sources.
 - **System Prompt Management**: Easily manage and switch between multiple system prompts.
 - **Context Window Size Setting**: Choose from 1 pair to the last 10 pair to keep context with the apiService.
+- **Speech-to-Text**: Easily convert voice recordings to text
+- **Text-to-Speech**: Convert text to speech to maintain voice conversations
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
 - **Dark/Light Mode**: Each template has both light and dark variants
 - **Conversation Management**: Save, browse, and manage multiple chat conversations
