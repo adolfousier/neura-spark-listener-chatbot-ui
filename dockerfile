@@ -23,7 +23,7 @@ RUN mkdir -p src/data/audio && \
   chmod -R 777 src/data
 
 # Install dependencies
-  RUN npm install 
+RUN npm install 
 
 # First Time - Generate Prisma Client
 RUN npx prisma generate 
