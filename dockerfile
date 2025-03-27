@@ -18,10 +18,15 @@ RUN npm install --save-dev @rollup/rollup-linux-x64-gnu
 # Copy entire project
 COPY . .
 
-RUN npm install 
+# Create necessary directories and set permissions
+RUN mkdir -p src/data/audio && \
+  chmod -R 777 src/data
+
+# Install dependencies
+  RUN npm install 
 
 # First Time - Generate Prisma Client
-RUN npx prisma generate
+RUN npx prisma generate 
 
 # Build the application
 RUN npm run build

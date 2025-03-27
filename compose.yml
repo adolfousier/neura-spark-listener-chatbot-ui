@@ -46,8 +46,19 @@ services:
       - VITE_GOOGLE_API_MODEL=${VITE_GOOGLE_API_MODEL}
       - VITE_GOOGLE_API_URL=${VITE_GOOGLE_API_URL}
 
+      # Azure Storage settings
+      - VITE_AZURE_STORAGE_CONTAINER_ID=${VITE_AZURE_STORAGE_CONTAINER_ID}
+      - VITE_AZURE_STORAGE_ACCOUNT_NAME=${VITE_AZURE_STORAGE_ACCOUNT_NAME}
+      - VITE_AZURE_STORAGE_SAS_TOKEN=${VITE_AZURE_STORAGE_SAS_TOKEN}
+
+      # Speech-to-Text and Text-to-Speech settings
+      - VITE_OPENAI_TTS_API_MODEL=${VITE_OPENAI_TTS_API_MODEL}
+      - VITE_OPENAI_TTS_API_VOICE=${VITE_OPENAI_TTS_API_VOICE}
+      - VITE_GROQ_STT_API_MODEL=${VITE_GROQ_STT_API_MODEL} 
+
     volumes:
       - ./public:/app/public
+      - ./data/audio:/app/data/audio
       #- ./prisma:/app/prisma
       #- ./prisma/dev.db:/app/prisma/dev.db
       - ./prisma/dev.db:/app/prisma/dev.db
