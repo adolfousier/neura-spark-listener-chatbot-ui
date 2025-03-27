@@ -17,7 +17,8 @@ Neura AI is a modern, customizable AI chatbot interface that supports multiple l
 
 ## Features
 
-- **Switch Easily Multiple AI Providers**: Seamlessly switch between Groq, Neura, Claude, Flowise, OpenRouter or OpenAI
+- **Switch Easily Multiple AI Providers**: Seamlessly switch between Groq, Neura, Flowise, OpenRouter, Google, Antropic or OpenAI
+- **Google Gemini Web Research**: Select web mode if you to research in real time with sources.
 - **System Prompt Management**: Easily manage and switch between multiple system prompts.
 - **Context Window Size Setting**: Choose from 1 pair to the last 10 pair to keep context with the apiService.
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
@@ -39,7 +40,6 @@ Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
 - **Customizable Settings**: Adjust parameters like temperature, model selection, and more
 
 ## Comming Soon
-- Google Service: Support for Google models like Gemini Pro and PaLM.
 - Follow-up Prompts: Suggest follow-up questions to enhance user engagement.
 - File Upload Support: Upload and process various file types including TXT, PDF, DOC, DOCX, CSV, JSON, and XML.
 - Image Upload Support: Upload and process image files with preview functionality.

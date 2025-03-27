@@ -170,6 +170,23 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/50;
   }
+  
+  /* Sources container styles */
+  .sources-container {
+    @apply flex overflow-x-auto py-2 gap-3 pb-1 mt-2 -mx-2 px-2 custom-scrollbar;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .source-link {
+    @apply px-3 py-1.5 bg-secondary/50 hover:bg-secondary text-secondary-foreground rounded-full text-sm whitespace-nowrap flex-shrink-0 transition-all;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  
+  .dark .source-link {
+    @apply bg-muted/50 hover:bg-muted;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
 }
 
 
