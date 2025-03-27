@@ -1,4 +1,4 @@
-# Neura AI Open Source Chatbot UI - The UX of ChatGPT in your Hands 🤝
+# Neura AI Open Source Chatbot UI - A ChatGPT style chat interface for everyone 🤝
 
 ## Overview
 
