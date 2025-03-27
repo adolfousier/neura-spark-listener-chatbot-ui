@@ -281,14 +281,14 @@ function Message({ message, onEditMessage }: MessageProps) {
           </Avatar>
         )}
         
-        <div className="relative">
+        <div className="relative max-w-[calc(100%-8rem)]">
           <div
             className={cn(
-              "flex flex-col gap-2 rounded-lg px-4 py-3 animate-fade-in overflow-hidden",
+              "flex flex-col gap-2 rounded-lg px-4 py-3 animate-fade-in",
               isUser
                 ? "bg-primary text-primary-foreground"
                 : "bg-secondary text-secondary-foreground",
-              "w-full max-w-full break-words",
+              "w-full break-words",
               "overflow-x-hidden" // Prevent horizontal overflow
             )}
           >

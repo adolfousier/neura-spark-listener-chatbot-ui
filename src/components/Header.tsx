@@ -88,7 +88,7 @@ export function Header({ className }: HeaderProps) {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p>{settings.audioResponseEnabled ? "Disable audio responses" : "Enable audio responses"}</p>
+              <p>{settings.audioResponseEnabled ? "Disable automatic audio playback" : "Enable automatic audio playback"}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

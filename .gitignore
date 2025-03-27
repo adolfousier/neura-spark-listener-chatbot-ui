@@ -9,7 +9,7 @@ lerna-debug.log*
 package-lock.json
 *lock.json
 
-
+/data
 node_modules
 dist
 dist-ssr

@@ -6,88 +6,58 @@
  * be implemented behind a server-side API endpoint that handles the API key securely.
  */
 
+import { getGroqSTTApiKey, getGroqSTTModel } from '@/lib/utils';
+
 /**
- * Convert speech to text using Groq's Whisper API
+ * Convert audio file to text using Groq's Whisper API
  * @param audioFile Audio file to transcribe
  * @returns Promise with transcribed text
  */
 export async function speechToText(audioFile: File): Promise<string> {
+  console.log('[STT Debug] Starting speech-to-text conversion', {
+    fileSize: audioFile.size,
+    fileType: audioFile.type,
+    fileName: audioFile.name
+  });
+  
+  const apiKey = getGroqSTTApiKey();
+  const model = getGroqSTTModel();
+  
+  if (!apiKey) {
+    throw new Error('Groq API key is not set. Please check your environment variables.');
+  }
+  
   try {
-    console.log(`[STT Debug] Starting STT conversion`, {
-      fileName: audioFile.name,
-      fileType: audioFile.type,
-      fileSize: audioFile.size,
-      lastModified: new Date(audioFile.lastModified).toISOString()
-    });
-    
-    // Send the audio file to our server endpoint
-    console.log(`[STT Debug] Preparing fetch request to /api/stt`);
-    
-    // Create FormData to send file properly
+    // Create form data
     const formData = new FormData();
+    formData.append('file', audioFile, 'recording.webm');
     
-    // Using a fixed filename and explicitly setting content type
-    const blob = new Blob([await audioFile.arrayBuffer()], { type: audioFile.type || 'audio/webm' });
-    console.log(`[STT Debug] Created new blob from file:`, {
-      blobSize: blob.size,
-      blobType: blob.type
-    });
-    
-    // Add to FormData with explicit filename
-    formData.append('audio', blob, 'recording.webm');
-    
-    console.log(`[STT Debug] Created FormData with audio file`, {
-      hasFile: formData.has('audio'),
-      formDataEntries: [...formData.entries()].map(entry => 
-        typeof entry[1] === 'string' 
-          ? { key: entry[0], value: entry[1] } 
-          : { key: entry[0], type: entry[1].type, size: entry[1].size }
-      )
-    });
-    
-    // Log fetch options
-    console.log(`[STT Debug] Sending fetch request with FormData`);
-    
-    // Use FormData to properly send the file with correct Content-Type
+    // Send request to server endpoint
+    console.log('[STT Debug] Sending request to server endpoint');
     const response = await fetch('/api/stt', {
       method: 'POST',
-      body: formData,
-    });
-    
-    console.log(`[STT Debug] Received response`, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries([...response.headers.entries()])
+      body: formData
     });
     
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error(`[STT Debug] Error response data:`, errorData);
-      throw new Error(errorData.error || `Server returned ${response.status}: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('[STT Debug] Server error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Server error: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
-    
-    console.log(`[STT Debug] Successfully transcribed speech to text:`, {
-      textSnippet: data.text?.substring(0, 50) + (data.text?.length > 50 ? '...' : '') || 'No text returned'
+    console.log('[STT Debug] Received response:', {
+      textLength: data.text.length,
+      textPreview: data.text.substring(0, 50) + (data.text.length > 50 ? '...' : '')
     });
     
-    return data.text || '';
+    return data.text;
   } catch (error) {
-    // Provide a better error message
-    if (error instanceof Error && error.message.includes('browser-like environment')) {
-      console.error(
-        '[STT Debug] Security Error: Groq SDK detected browser environment. ' +
-        'API keys should never be exposed in client-side code. ' +
-        'Implement a server-side API endpoint to handle this securely.'
-      );
-      throw new Error(
-        'Speech-to-text functionality must be implemented on the server side for security. ' +
-        'Please contact the developer to fix this issue.'
-      );
-    }
-    
-    console.error('[STT Debug] Error converting speech to text:', error);
+    console.error('[STT Debug] Failed to convert speech to text:', error);
     throw error;
   }
 } 

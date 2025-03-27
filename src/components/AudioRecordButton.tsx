@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useChat } from '@/context/ChatContext';
-import { blobToArrayBuffer, convertSpeechToText, convertAndUploadTextToSpeech, playAudio } from '@/services/audioService';
+import { blobToArrayBuffer, convertSpeechToText, convertAndUploadTextToSpeech, playAudio, stopRecording } from '@/services/audioService';
 import { cn } from '@/lib/utils';
 import { useRecordAudio } from '@/hooks/use-record-audio';
 
@@ -14,12 +14,12 @@ type AudioRecordButtonProps = {
 export function AudioRecordButton({ className }: AudioRecordButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
-  const { sendMessage, setIsInputDisabled } = useChat();
+  const { sendMessage, setIsInputDisabled, addMessage, settings } = useChat();
   const audioPreviewRef = useRef<HTMLAudioElement | null>(null);
   const audioPreviewUrlRef = useRef<string | null>(null);
   
   // Use our custom recording hook
-  const { isRecording, startRecording, stopRecording, isRecordingSupported } = useRecordAudio();
+  const { isRecording, startRecording, stopRecording: stopRecordingHook, isRecordingSupported } = useRecordAudio();
 
   // Clean up audio preview URL when component unmounts
   useEffect(() => {
@@ -44,6 +44,40 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
     console.log('[Record Debug] Created audio preview URL:', url);
     return url;
   };
+
+  // Helper function to play audio preview
+  const playAudioPreview = async (url: string) => {
+    if (audioPreviewRef.current) {
+      console.log('[Record Debug] Playing audio preview');
+      audioPreviewRef.current.src = url;
+      await audioPreviewRef.current.play().catch(err => {
+        console.error('[Record Debug] Error playing audio preview:', err);
+      });
+    } else {
+      console.warn('[Record Debug] Audio preview element not available');
+    }
+  };
+
+  // Handle cancel recording
+  const handleCancelRecording = async () => {
+    try {
+      console.log('[Record Debug] Cancelling recording');
+      await stopRecordingHook();
+      toast({
+        title: 'Recording cancelled',
+        description: 'Voice recording has been cancelled.',
+        duration: 5000
+      });
+    } catch (error) {
+      console.error('[Record Debug] Error cancelling recording:', error);
+      toast({
+        title: 'Error cancelling recording',
+        description: error instanceof Error ? error.message : 'Failed to cancel recording',
+        variant: 'destructive',
+        duration: 5000
+      });
+    }
+  };
   
   const handleRecordToggle = async () => {
     if (!isRecordingSupported()) {
@@ -52,6 +86,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
         title: 'Recording not supported',
         description: 'Your browser does not support audio recording.',
         variant: 'destructive',
+        duration: 5000
       });
       return;
     }
@@ -64,7 +99,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
         setIsInputDisabled(true); // Disable all input during processing
         
         // Get recorded audio
-        const audioBlob = await stopRecording();
+        const audioBlob = await stopRecordingHook();
         console.log('[Record Debug] Audio blob received', {
           size: audioBlob.size,
           type: audioBlob.type
@@ -77,6 +112,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
             title: 'Recording failed',
             description: 'No audio was captured. Please check your microphone and try again.',
             variant: 'destructive',
+            duration: 5000
           });
           setIsProcessing(false);
           setIsInputDisabled(false);
@@ -86,20 +122,15 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
         // Create audio preview
         const previewUrl = createAudioPreview(audioBlob);
         
-        // Play the audio preview
-        if (audioPreviewRef.current) {
-          console.log('[Record Debug] Playing audio preview');
-          audioPreviewRef.current.src = previewUrl;
-          audioPreviewRef.current.play().catch(err => {
-            console.error('[Record Debug] Error playing audio preview:', err);
-          });
-        } else {
-          console.warn('[Record Debug] Audio preview element not available');
+        // Play the audio preview if auto-play is enabled
+        if (settings.audioResponseEnabled) {
+          await playAudioPreview(previewUrl);
         }
         
         toast({
           title: 'Recording complete',
           description: 'Processing your voice message...',
+          duration: 5000
         });
         
         // Convert to ArrayBuffer for processing
@@ -119,6 +150,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
         toast({
           title: 'Processing voice message',
           description: 'Converting speech to text...',
+          duration: 5000
         });
         
         // Step 1: Convert speech to text
@@ -135,6 +167,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
             title: 'Empty recording',
             description: 'No speech detected in recording.',
             variant: 'destructive',
+            duration: 5000
           });
           setIsProcessing(false);
           setIsInputDisabled(false);
@@ -154,6 +187,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
               title: 'Empty response',
               description: 'No response content received from API.',
               variant: 'destructive',
+              duration: 5000
             });
             setIsProcessing(false);
             setIsInputDisabled(false);
@@ -166,9 +200,13 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
             textPreview: apiResponseText.substring(0, 50) + (apiResponseText.length > 50 ? '...' : '')
           });
 
+          // Add the assistant's response to the chat
+          addMessage("assistant", apiResponseText);
+
           toast({
             title: 'Message sent',
             description: `Processing response...`,
+            duration: 5000
           });
           
           // Step 3: Try to convert the API response to speech, but continue even if it fails
@@ -177,17 +215,23 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
             toast({
               title: 'Converting to speech',
               description: 'Generating audio response...',
+              duration: 5000
             });
             
             const { audioData: ttsAudioData, audioUrl } = await convertAndUploadTextToSpeech(apiResponseText);
             
-            // Play the TTS audio
-            console.log('[Record Debug] Playing TTS audio response');
-            await playAudio(ttsAudioData);
+            // Create and play the TTS audio preview if auto-play is enabled
+            const ttsBlob = new Blob([ttsAudioData], { type: 'audio/mpeg' });
+            const ttsPreviewUrl = createAudioPreview(ttsBlob);
+            
+            if (settings.audioResponseEnabled) {
+              await playAudioPreview(ttsPreviewUrl);
+            }
             
             toast({
               title: 'Voice processing complete',
               description: `Response audio ready`,
+              duration: 5000
             });
           } catch (ttsError) {
             console.error('[Record Debug] Error converting text to speech:', ttsError);
@@ -195,6 +239,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
             toast({
               title: 'Voice message processed',
               description: 'Could not generate audio response, but message was sent successfully.',
+              duration: 5000
             });
           }
         } catch (apiError) {
@@ -203,6 +248,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
             title: 'API Error',
             description: apiError instanceof Error ? apiError.message : 'Error getting API response',
             variant: 'destructive',
+            duration: 5000
           });
         }
       } else {
@@ -213,6 +259,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
         toast({
           title: 'Recording started',
           description: 'Speak now. Click again to stop recording.',
+          duration: 5000
         });
       }
     } catch (error) {
@@ -221,6 +268,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
         title: 'Recording error',
         description: error instanceof Error ? error.message : 'An error occurred with voice recording',
         variant: 'destructive',
+        duration: 5000
       });
     } finally {
       setIsProcessing(false);
@@ -232,10 +280,7 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
   if (!isRecordingSupported()) return null;
 
   return (
-    <>
-      {/* Hidden audio element for preview */}
-      <audio ref={audioPreviewRef} style={{ display: 'none' }} />
-      
+    <div className="flex items-center gap-2">
       <Button
         type="button"
         size="icon"
@@ -263,6 +308,19 @@ export function AudioRecordButton({ className }: AudioRecordButtonProps) {
           </svg>
         )}
       </Button>
-    </>
+      {isRecording && (
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="h-9 w-9 shrink-0 text-red-500 hover:text-red-600 hover:bg-red-100"
+          onClick={handleCancelRecording}
+          disabled={isProcessing}
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      )}
+      <audio ref={audioPreviewRef} className="hidden" />
+    </div>
   );
 } 

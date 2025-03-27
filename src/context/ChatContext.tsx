@@ -344,6 +344,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
       
+      // Always add the current user message
+      messages.push({ role: "user", content });
+      
       // Create the chat request
       const chatRequest = {
         messages,

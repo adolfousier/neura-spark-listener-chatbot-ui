@@ -56,7 +56,11 @@ export default defineConfig(({ mode }) => {
               console.log('[STT Debug] Parsing multipart/form-data with busboy');
               
               // Create a file to store the audio data
-              const tempFileName = `temp-${Date.now()}.webm`;
+              const tempDir = 'data/audio/azure';
+              if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir, { recursive: true });
+              }
+              const tempFileName = path.join(tempDir, `temp-${Date.now()}.webm`);
               
               // Set up busboy to handle the multipart form
               const bb = busboy({ headers: req.headers });
@@ -289,7 +293,11 @@ export default defineConfig(({ mode }) => {
             }
 
             // Create a temporary file
-            const tempFileName = `temp-${Date.now()}.webm`;
+            const tempDir = 'data/audio/azure';
+            if (!fs.existsSync(tempDir)) {
+              fs.mkdirSync(tempDir, { recursive: true });
+            }
+            const tempFileName = path.join(tempDir, `temp-${Date.now()}.webm`);
             console.log(`[STT Debug] Writing to temp file: ${tempFileName}`);
             fs.writeFileSync(tempFileName, buffer);
             

@@ -1,8 +1,4 @@
-import { 
-  getAzureStorageContainerName, 
-  getAzureStorageAccountName, 
-  getAzureStorageSasToken 
-} from '@/lib/utils';
+import { BlobServiceClient } from '@azure/storage-blob';
 
 /**
  * Azure Blob Storage Service
@@ -19,46 +15,60 @@ export async function uploadAudioToAzure(
   audioData: ArrayBuffer,
   fileName?: string
 ): Promise<string> {
-  console.log('[Azure Blob] Uploading audio to Azure Blob Storage');
+  console.log('[Azure Blob] Starting audio upload');
   
-  // Get Azure Storage config from environment variables
-  const containerName = getAzureStorageContainerName();
-  const accountName = getAzureStorageAccountName();
-  const sasToken = getAzureStorageSasToken();
+  const accountName = import.meta.env.VITE_AZURE_STORAGE_ACCOUNT_NAME;
+  const containerName = import.meta.env.VITE_AZURE_STORAGE_CONTAINER_ID;
+  const sasToken = import.meta.env.VITE_AZURE_STORAGE_SAS_TOKEN;
   
-  if (!containerName || !accountName || !sasToken) {
-    throw new Error('Azure Storage configuration is missing. Please check your environment variables.');
+  if (!accountName || !containerName || !sasToken) {
+    console.error('[Azure Blob] Missing credentials:', {
+      hasAccountName: !!accountName,
+      hasContainerName: !!containerName,
+      hasSasToken: !!sasToken
+    });
+    throw new Error('Azure Storage credentials not configured');
   }
   
   try {
-    // Generate a unique file name if not provided
-    const audioFileName = fileName || `speech-${Date.now()}.mp3`;
+    // Create blob service client with SAS token
+    const blobServiceClient = new BlobServiceClient(
+      `https://${accountName}.blob.core.windows.net${sasToken}`
+    );
+    const containerClient = blobServiceClient.getContainerClient(containerName);
     
-    // Create blob URL with SAS token
-    const blobUrl = `https://${accountName}.blob.core.windows.net/${containerName}/${audioFileName}${sasToken}`;
+    // Generate unique blob name
+    const blobName = fileName || `speech-${Date.now()}.mp3`;
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
     
-    // Convert ArrayBuffer to Blob
-    const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
-    
-    // Upload the blob to Azure Storage
-    const response = await fetch(blobUrl, {
-      method: 'PUT',
-      headers: {
-        'x-ms-blob-type': 'BlockBlob',
-        'Content-Type': 'audio/mpeg'
-      },
-      body: audioBlob
+    // Upload the audio data
+    console.log('[Azure Blob] Uploading audio data:', {
+      blobName,
+      dataSize: audioData.byteLength
     });
     
-    if (!response.ok) {
-      throw new Error(`Upload failed with status: ${response.status} ${response.statusText}`);
-    }
+    await blockBlobClient.uploadData(audioData, {
+      blobHTTPHeaders: {
+        blobContentType: 'audio/mpeg'
+      }
+    });
     
-    console.log(`[Azure Blob] Successfully uploaded audio file: ${audioFileName}`);
+    // Get the URL with SAS token
+    const sasUrl = await blockBlobClient.generateSasUrl({
+      permissions: 'r', // Read only
+      expiresOn: new Date(new Date().valueOf() + 24 * 60 * 60 * 1000), // 24 hours
+      protocol: 'https',
+      cacheControl: 'no-cache',
+      contentDisposition: 'inline',
+      contentType: 'audio/mpeg'
+    });
     
-    // Return the public URL (without the SAS token for client access)
-    const publicUrl = `https://${accountName}.blob.core.windows.net/${containerName}/${audioFileName}`;
-    return publicUrl;
+    console.log('[Azure Blob] Upload successful:', {
+      blobName,
+      url: sasUrl
+    });
+    
+    return sasUrl;
   } catch (error) {
     console.error('[Azure Blob] Error uploading audio:', error);
     throw error;

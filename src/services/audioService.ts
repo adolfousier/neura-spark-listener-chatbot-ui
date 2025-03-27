@@ -198,7 +198,7 @@ export async function stopRecording(): Promise<Blob> {
       // Try to clean up anyway
       mediaRecorder!.stream.getTracks().forEach(track => track.stop());
       mediaRecorder = null;
-      reject(new Error(`MediaRecorder was not in recording state, was: ${mediaRecorder!.state}`));
+      reject(new Error('Recording was not in progress'));
     }
   });
 }

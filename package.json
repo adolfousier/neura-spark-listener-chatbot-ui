@@ -1,7 +1,7 @@
 {
   "name": "neura-chatbot-ui",
   "private": true,
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@azure/storage-blob": "^12.27.0",
     "@google/generative-ai": "^0.24.0",
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^6.5.0",
