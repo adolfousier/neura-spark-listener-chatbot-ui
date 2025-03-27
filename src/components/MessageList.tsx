@@ -259,7 +259,8 @@ function Message({ message, onEditMessage }: MessageProps) {
               isUser
                 ? "bg-primary text-primary-foreground"
                 : "bg-secondary text-secondary-foreground",
-              "w-full" // Fixed width for both user and assistant messages
+              "w-full max-w-full break-words",
+              "overflow-x-hidden" // Prevent horizontal overflow
             )}
           >
             {isEditing && isUser ? (
@@ -274,7 +275,6 @@ function Message({ message, onEditMessage }: MessageProps) {
                 />
                 <div className="flex justify-end mt-2 space-x-2">
                   <Button 
-                    variant="outline" 
                     size="sm" 
                     onClick={handleCancelEdit}
                   >

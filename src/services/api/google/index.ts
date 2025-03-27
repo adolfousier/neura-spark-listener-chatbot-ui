@@ -153,11 +153,15 @@ export async function sendGoogleRequest(
             if (sources.length > 0) {
               console.log(`[Google API] Adding ${sources.length} sources to the response`);
               
-              // Create sources section
+              // Create sources section with preview capability
               const sourcesSection = "\n\n---\n**Sources:**\n" + 
                 '<div class="sources-container">' +
                 sources.map(src => 
-                  `<a href="${src.uri}" target="_blank" class="source-link">${src.title}</a>`
+                  `<a href="${src.uri}" 
+                    target="_blank" 
+                    class="source-link" 
+                    data-website-url="${src.uri}"
+                    data-website-title="${src.title}">${src.title}</a>`
                 ).join(' • ') +
                 '</div>';
               
@@ -244,11 +248,15 @@ export async function sendGoogleRequest(
       if (sources.length > 0) {
         console.log(`[Google API] Adding ${sources.length} sources to the response`);
         
-        // Create sources section
+        // Create sources section with preview capability
         const sourcesSection = "\n\n---\n**Sources:**\n" + 
           '<div class="sources-container">' +
           sources.map(src => 
-            `<a href="${src.uri}" target="_blank" class="source-link">${src.title}</a>`
+            `<a href="${src.uri}" 
+              target="_blank" 
+              class="source-link" 
+              data-website-url="${src.uri}"
+              data-website-title="${src.title}">${src.title}</a>`
           ).join(' • ') +
           '</div>';
         

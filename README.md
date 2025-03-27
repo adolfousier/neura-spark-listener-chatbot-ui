@@ -89,6 +89,7 @@ DATABASE_URL="file:./dev.db"  # SQLite database path
 
 # Optional with defaults
 VITE_BACKEND_SERVICE_PROVIDER=groq  # Defaults to 'groq' if not provided
+VITE_DEFAULT_SYSTEM_PROMPT=optional default system prompt 
 VITE_GROQ_API_MODEL=deepseek-r1-distill-llama-70b  # Default model for Groq
 VITE_GOOGLE_API_MODEL=gemini-2.0-flash  # Default model for Google
 VITE_STREAM_ENABLED=true  # Enable/disable streaming responses

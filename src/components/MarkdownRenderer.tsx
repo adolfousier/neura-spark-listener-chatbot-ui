@@ -87,6 +87,34 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
     return () => observer.disconnect();
   }, []);
 
+  // Add effect to handle source link hovers
+  React.useEffect(() => {
+    // Script to handle source link hover interactions
+    const handleSourceLinks = () => {
+      // Find all source links after rendering
+      const sourceLinks = document.querySelectorAll('.source-link');
+      
+      // Add hover event listeners to handle preview visibility
+      sourceLinks.forEach(link => {
+        link.addEventListener('mouseenter', () => {
+          // Make sure hover effects stay within viewport
+          const linkRect = link.getBoundingClientRect();
+          if (linkRect.top < 150) {
+            // If link is too close to top, adjust the hover position
+            link.classList.add('preview-below');
+          }
+        });
+      });
+    };
+    
+    // Run the handler after a short delay to ensure DOM is fully updated
+    const timer = setTimeout(() => {
+      handleSourceLinks();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [content]); // Re-run when content changes
+
   return (
     <div className={cn('prose prose-sm dark:prose-invert max-w-none break-words', className)}>
       <ReactMarkdown
