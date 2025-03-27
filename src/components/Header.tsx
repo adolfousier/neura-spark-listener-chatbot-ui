@@ -61,7 +61,7 @@ export function Header({ className }: HeaderProps) {
                 aria-label="Toggle web search"
                 className={settings.webSearchEnabled ? "text-primary" : "text-muted-foreground hover:text-foreground"}
               >
-                <Globe className="h-5 w-5" />
+                <Globe className={`h-5 w-5 ${settings.webSearchEnabled ? "animate-pulse-icon" : ""}`} />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">

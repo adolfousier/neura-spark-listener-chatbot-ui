@@ -277,6 +277,26 @@
   animation: bounceSlow 2s ease-in-out infinite;
 }
 
+/* Add pulse animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pulse-icon {
+  animation: pulse 2s ease-in-out infinite;
+}
+
 @layer utilities {
   /* Fade-in animation */
   .animated-fade-in {
