@@ -2,18 +2,7 @@
 
 ## Overview
 
-Neura AI is a modern, customizable AI chatbot interface that supports multiple language models and visual templates. It's built with React, TypeScript, and modern web technologies to provide an exceptional user experience.
-
-## App Preview
-
-### Home Page
-![Home Page View](./public/og.png)
-
-### Desktop Chat View
-![Desktop Chat View](./public/og-image.png)
-
-### Mobile Chat View
-![Mobile Chat View](https://neuraai.blob.core.windows.net/uploads/neura-spark-chatbot-preview-mobile.png)
+Neura AI is a modern, customizable AI chatbot interface that supports persistent conversations prisma database, web research, multiple AI services, and visual templates. It's built with Vite, React, TypeScript, shadcn UI and more modern web technologies to provide an exceptional user experience.
 
 ## Features
 
@@ -50,6 +39,17 @@ Drag-and-Drop Functionality: Supports drag-and-drop for uploading files and imag
 - Boxed/Full Screen Mode: Allows users to switch between a boxed chat interface and a fullscreen experience.
 - Personalized Welcome Message: Allows defining a personalized welcome message to greet users upon entering the chat.
 Visual Feedback: Displays loading animations and progress indicators during operations.
+
+## App Preview
+
+### Home Page
+![Home Page View](./public/og.png)
+
+### Desktop Chat View
+![Desktop Chat View](./public/og-image.png)
+
+### Mobile Chat View
+![Mobile Chat View](https://neuraai.blob.core.windows.net/uploads/neura-spark-chatbot-preview-mobile.png)
 
 ## Getting Started
 
