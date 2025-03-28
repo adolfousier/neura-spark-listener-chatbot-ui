@@ -15,6 +15,9 @@ RUN npm install --save-dev @rollup/rollup-linux-x64-gnu
 COPY package*.json ./
 RUN npm install
 
+# Install Firebase dependencies explicitly
+RUN npm install firebase@latest
+
 # Copy entire project
 COPY . .
 

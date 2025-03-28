@@ -5,14 +5,45 @@
 
 # Using wildcards, etc.
 # By using wildcards in the description, you can specify a target file regardless of which directory it is in. The following is an example of specifying a file named target in any directory one level below the build context root.
-*/logs
-/target
+*/node_modules
+/build
 *.env
 .env
-src/data/env
-Cargo.lock
-src/data/logs
+
 # On the other hand, if you want to specify a specific file name, not just a file hierarchy, use **.
 # **/target
 
 
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+
+/data
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment
+.env 
+*.env 
+.env*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+commands.md
