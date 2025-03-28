@@ -9,9 +9,6 @@ RUN apt-get update -y \
         libssl-dev \
         ca-certificates
 
-# Remove existing node_modules to avoid conflicts
-RUN rm -rf node_modules
-
 # Install Rollup dependency explicitly first
 RUN npm install --save-dev @rollup/rollup-linux-x64-gnu
 
@@ -24,9 +21,6 @@ COPY . .
 # Create necessary directories and set permissions
 RUN mkdir -p src/data/audio && \
   chmod -R 777 src/data
-
-# Install dependencies
-RUN npm install 
 
 # First Time - Generate Prisma Client
 RUN npx prisma generate 
