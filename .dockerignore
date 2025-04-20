@@ -7,8 +7,7 @@
 # By using wildcards in the description, you can specify a target file regardless of which directory it is in. The following is an example of specifying a file named target in any directory one level below the build context root.
 */node_modules
 /build
-*.env
-.env
+
 
 # On the other hand, if you want to specify a specific file name, not just a file hierarchy, use **.
 # **/target
@@ -30,10 +29,7 @@ dist
 dist-ssr
 *.local
 
-# Environment
-.env 
-*.env 
-.env*
+
 
 # Editor directories and files
 .vscode/*

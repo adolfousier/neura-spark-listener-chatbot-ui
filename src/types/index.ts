@@ -1,4 +1,4 @@
-export type Provider = 'groq' | 'claude' | 'openai' | 'flowise' | 'openrouter' | 'neura' | 'google';
+export type Provider = 'groq' | 'claude' | 'openai' | 'flowise' | 'openrouter' | 'neurarouter' | '' | 'google';
 
 export type Template = 'minimal' | 'vibrant' | 'elegant';
 
@@ -7,6 +7,7 @@ export type Message = {
   role: 'user' | 'assistant' | 'system';
   content: string;
   createdAt: Date;
+  updatedAt?: Date;
   tokenCount?: number; // Optional token count field
   audioUrl?: string;   // Optional URL to the audio version of the message
 };

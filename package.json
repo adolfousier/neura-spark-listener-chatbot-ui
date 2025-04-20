@@ -1,7 +1,7 @@
 {
   "name": "neura-chatbot-ui",
   "private": true,
-  "version": "0.2.8",
+  "version": "0.2.9",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -54,6 +54,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
+    "firebase": "^11.6.0",
     "flowise-sdk": "^1.0.9",
     "gpt-3-encoder": "^1.1.4",
     "groq-sdk": "^0.17.0",

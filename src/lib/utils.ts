@@ -22,7 +22,7 @@ export function formatDate(date: Date): string {
 
 export function getProviderFromEnv(): Provider {
   const provider = import.meta.env.VITE_BACKEND_SERVICE_PROVIDER?.toLowerCase() as Provider;
-  return ['claude', 'openai', 'flowise', 'openrouter', 'neura', 'google'].includes(provider) ? provider : 'groq';
+  return ['claude', 'openai', 'flowise', 'openrouter', 'neurarouter', 'google'].includes(provider) ? provider : 'groq';
 }
 
 export function getDefaultSettings(): Settings {
@@ -71,7 +71,7 @@ export function getApiUrlForProvider(provider: Provider): string {
       return import.meta.env.VITE_OPENROUTER_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
     case 'flowise':
       return import.meta.env.VITE_FLOWISE_API_URL || 'http://localhost:3000/api/v1/prediction';
-    case 'neura':
+    case 'neurarouter':
       return import.meta.env.VITE_NEURA_ROUTER_API_URL || 'https://api.meetneura.ai/v1/chat/completions/router';
     case 'google':
       return import.meta.env.VITE_GOOGLE_API_URL || 'https://generativelanguage.googleapis.com';
@@ -92,7 +92,7 @@ export function getApiKeyForProvider(provider: Provider): string {
       return import.meta.env.VITE_OPENROUTER_API_KEY || '';
     case 'flowise':
       return import.meta.env.VITE_FLOWISE_API_KEY || '';
-    case 'neura':
+    case 'neurarouter':
       return import.meta.env.VITE_NEURA_ROUTER_API_KEY || '';
     case 'google':
       return import.meta.env.VITE_GOOGLE_API_KEY || '';

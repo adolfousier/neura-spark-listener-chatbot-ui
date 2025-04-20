@@ -67,7 +67,7 @@ export function SettingsDialog() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="groq">Groq</SelectItem>
-                <SelectItem value="neura">Neura Router</SelectItem>
+                <SelectItem value="neurarouter">Neura Router</SelectItem>
                 <SelectItem value="openrouter">Open Router</SelectItem>
                 <SelectItem value="google">Google</SelectItem>
                 <SelectItem value="flowise">Flowise</SelectItem>
@@ -100,7 +100,7 @@ export function SettingsDialog() {
                   </>
                 )}
                 {/* Add Neura models here */}
-                {localSettings.provider === 'neura' && (
+                {localSettings.provider === 'neurarouter' && (
                   <>
                     <SelectItem value="allam-2-7b">Allam 2.7B</SelectItem>
                     <SelectItem value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill Llama 70B</SelectItem>

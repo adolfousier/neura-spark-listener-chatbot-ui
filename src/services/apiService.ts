@@ -30,7 +30,7 @@ export async function sendChatRequest(
   if (provider === 'flowise') {
     console.log(`[API Service] Sending request to Flowise`);
     return sendFlowiseRequest(apiUrl, apiKey, chatRequest);
-  } else if (provider === 'neura') {
+  } else if (provider === 'neurarouter') {
     console.log(`[API Service] Sending request to Neura`);
     return sendNeuraRequest(apiUrl, apiKey, chatRequest);
   } else if (provider === 'claude') {
@@ -370,7 +370,7 @@ export async function sendNeuraRequest(
         role: msg.role === 'system' ? 'user' : msg.role,
         content: msg.content,
       })),
-      model: chatRequest.model || 'neura-default',
+      model: chatRequest.model || 'neurarouter-default',
       temperature: chatRequest.temperature,
       stream: true, // Always stream from API
     };

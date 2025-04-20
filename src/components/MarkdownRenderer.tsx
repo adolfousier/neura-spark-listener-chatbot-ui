@@ -198,50 +198,46 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               
               React.useEffect(() => {
                 console.log('Mermaid diagram useEffect triggered', { diagramId });
-                if (mermaidRef.current) {
-                  console.log('mermaidRef is available');
-                  const mermaidCode = String(children).replace(/\n$/, '');
-                  console.log('Mermaid code to render:', mermaidCode);
-                  try {
-                    // First try to parse the diagram to validate it
-                    console.log('Parsing mermaid diagram to validate');
-                    mermaid.parse(mermaidCode);
-                    
-                    // Clear previous content
-                    mermaidRef.current.innerHTML = '';
-                    console.log('Previous content cleared, attempting to render diagram');
-                    // Render the diagram
-                    console.log('Calling mermaid.render with ID:', diagramId);
-                    mermaid.render(diagramId, mermaidCode).then(({ svg, bindFunctions }) => {
-                      console.log('Mermaid rendered successfully, svg length:', svg.length);
+                if (mermaidRef.current && children) {
+                  const code = String(children).trim();
+                  console.log('Attempting to render Mermaid diagram:', { diagramId, code });
+                  
+                  // Clear previous content
+                  mermaidRef.current.innerHTML = '';
+                  
+                  // Use a timeout to ensure the DOM element is ready and Mermaid is initialized
+                  const timer = setTimeout(() => {
+                    try {
+                      // Check if the component is still mounted
+                      if (!mermaidRef.current) return;
+                      
+                      // Render the diagram using the correct signature
+                      mermaid.render(diagramId, code).then(({svg, bindFunctions}) => {
+                        if (mermaidRef.current) {
+                          mermaidRef.current.innerHTML = svg;
+                          if (bindFunctions) {
+                            bindFunctions(mermaidRef.current);
+                          }
+                          console.log('Mermaid diagram rendered successfully', { diagramId });
+                        }
+                      }).catch(error => {
+                        console.error('Error rendering Mermaid diagram:', { diagramId, error });
+                        if (mermaidRef.current) {
+                          mermaidRef.current.innerHTML = `<pre class=\"text-red-500\">Error rendering diagram: ${error.message || 'Unknown error'}</pre>`;
+                        }
+                      });
+                    } catch (error) {
+                      console.error('Error rendering Mermaid diagram:', { diagramId, error });
                       if (mermaidRef.current) {
-                        console.log('Inserting SVG into DOM');
-                        // Set the SVG content directly
-                        mermaidRef.current.innerHTML = svg;
-                        // Apply any interactive functions to the diagram
-                        if (bindFunctions) bindFunctions(mermaidRef.current);
-                        console.log('SVG inserted successfully');
-                      } else {
-                        console.error('mermaidRef.current no longer available after successful render');
+                        mermaidRef.current.innerHTML = `<pre class=\"text-red-500\">Error rendering diagram: ${error.message || 'Unknown error'}</pre>`;
                       }
-                    }).catch(error => {
-                      console.error('Mermaid rendering error:', error);
-                      if (mermaidRef.current) {
-                        console.log('Rendering failed, displaying code as fallback');
-                        mermaidRef.current.innerHTML = `<pre>${mermaidCode}</pre>`;
-                      }
-                    });
-                  } catch (error) {
-                    console.error('Mermaid error during render attempt:', error);
-                    if (mermaidRef.current) {
-                      console.log('Exception caught, displaying code as fallback');
-                      mermaidRef.current.innerHTML = `<pre>${mermaidCode}</pre>`;
                     }
-                  }
-                } else {
-                  console.error('mermaidRef is not available, cannot render diagram');
+                  }, 50); // Small delay to allow DOM updates
+                  
+                  // Cleanup function to clear the timer if the component unmounts
+                  return () => clearTimeout(timer);
                 }
-              }, [children, diagramId]);
+              }, [children, diagramId]); // Rerun when children or ID changes
 
               const handleCopyDiagram = () => {
                 const mermaidCode = String(children).replace(/\n$/, '');

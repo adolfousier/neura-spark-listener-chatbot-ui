@@ -127,14 +127,10 @@ export function MessageList({ conversation, className }: MessageListProps) {
     // Get the context messages
     const contextMessages = conversation.messages.slice(contextStartIndex, contextEndIndex);
     
-    // Create a new message list with the context + edited message
-    const newMessageList = [
-      ...contextMessages,
-      { ...editedMessage, content: newContent }
-    ];
-
-    // Send the edited message to regenerate the response
-    sendMessage(newContent, newMessageList, messageIndex);
+    // Send the edited message to regenerate the response.
+    // ChatContext's sendMessage will handle slicing the conversation
+    // history and preparing the correct context based on the editedMessageIndex.
+    sendMessage(newContent, undefined, messageIndex);
     
     toast({
       title: "Message edited",

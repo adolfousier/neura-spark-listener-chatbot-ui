@@ -4,6 +4,7 @@ import { generateId, getDefaultSettings, getFirstMessage } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
 import { sendChatRequest, streamChatResponse } from "@/services/apiService";
 import { convertTextToSpeech, playAudio, convertAndUploadTextToSpeech } from "@/services/audioService";
+import { countTokens } from '@/lib/tokenizer';
 
 type ChatContextType = {
   conversations: Conversation[];
@@ -297,9 +298,34 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     
     try {
-      // Add user message to conversation (unless we're editing)
-      if (editedMessageIndex === undefined) {
-        addMessage("user", content);
+      // If editing, update the state immediately to reflect the edit and remove subsequent messages
+      if (editedMessageIndex !== undefined) {
+        setConversations(prev =>
+          prev.map(conv => {
+            if (conv.id === currentConversationId) {
+              // Get messages up to the edited one
+              const messagesBeforeEdit = conv.messages.slice(0, editedMessageIndex);
+              // Get the original message object to update
+              const originalMessage = conv.messages[editedMessageIndex];
+              // Create the updated message with new content
+              const updatedMessage = {
+                ...originalMessage,
+                content: content, // Use the 'content' parameter passed to sendMessage
+                createdAt: new Date() // Update timestamp
+              };
+              return {
+                ...conv,
+                // Combine messages before edit + the updated message
+                messages: [...messagesBeforeEdit, updatedMessage],
+                updatedAt: new Date(),
+              };
+            }
+            return conv;
+          })
+        );
+      } else {
+         // If not editing, add the new user message normally
+         addMessage("user", content);
       }
       
       // Prepare messages array with system prompt if available
@@ -310,41 +336,35 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         messages.push({ role: "system", content: settings.systemPrompt });
       }
       
-      // If we're editing and have context messages, use those
-      // Otherwise use the full conversation history
-      if (editedMessageIndex !== undefined && contextMessages) {
-        // Add context messages
-        messages.push(
-          ...contextMessages.map(m => ({
-            role: m.role,
-            content: m.content
-          }))
-        );
-      } else {
-        // Add regular conversation history
-        const updatedConversation = conversations.find(conv => conv.id === currentConversationId);
-        if (updatedConversation) {
-          // Limit the conversation history based on the context window setting
-          const allMessages = updatedConversation.messages;
-          let messagesToInclude = allMessages;
-          
-          // If we have more messages than the context window, limit it
-          if (allMessages.length > settings.contextWindowSize * 2) {
-            // Include the last N message pairs (user+assistant)
-            const startIndex = Math.max(0, allMessages.length - (settings.contextWindowSize * 2));
-            messagesToInclude = allMessages.slice(startIndex);
-          }
-          
-          messages.push(
-            ...messagesToInclude.map(m => ({
-              role: m.role,
-              content: m.content
-            }))
-          );
+      // Get the current conversation state
+      const currentConversation = conversations.find(conv => conv.id === currentConversationId);
+      let messagesToSend: Message[] = [];
+
+      if (currentConversation) {
+        if (editedMessageIndex !== undefined) {
+          // If editing, use messages up to the edited one (exclusive of the original edited message)
+          messagesToSend = currentConversation.messages.slice(0, editedMessageIndex);
+        } else {
+          // If not editing, use the regular conversation history
+          messagesToSend = currentConversation.messages;
+        }
+
+        // Limit the history based on context window size, excluding the system prompt if present
+        const historyLimit = settings.contextWindowSize * 2;
+        if (messagesToSend.length > historyLimit) {
+          const startIndex = Math.max(0, messagesToSend.length - historyLimit);
+          messagesToSend = messagesToSend.slice(startIndex);
         }
       }
-      
-      // Always add the current user message
+
+      // Add the messages (excluding system prompt if it was added earlier)
+      messages.push(
+        ...messagesToSend
+          .filter(m => m.role !== 'system') // Avoid duplicate system prompts
+          .map(m => ({ role: m.role, content: m.content }))
+      );
+
+      // Always add the current user message (the edited content or new content)
       messages.push({ role: "user", content });
       
       // Create the chat request
@@ -371,6 +391,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         return { content: responseContent };
       }
       
+      // State update for editing is now handled earlier, before preparing the API payload.
+
       // For any provider without streaming, add a placeholder loading message
       let placeholderMessageId = null;
       
@@ -390,6 +412,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
             conv.id === currentConversationId 
               ? {
                   ...conv,
+                  // Add placeholder AFTER potentially slicing for edit
                   messages: [...conv.messages, placeholderMessage],
                   updatedAt: new Date()
                 } 
@@ -440,24 +463,28 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
             if (controller.signal.aborted) {
               break;
             }
-            
+
+            // Accumulate the chunk content
             responseContent += chunk;
             
-            // Calculate token count
-            const tokenCount = responseContent.split(/\s+/).length;
+            // Update the message with the current content and recalculate token count
+            const words = responseContent
+              .trim()
+              .split(/\s+|[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/) 
+              .filter(word => word.length > 0);
             
-            // Update the message with the current content
             setConversations(prev => 
               prev.map(conv => 
                 conv.id === currentConversationId 
                   ? {
                       ...conv,
+                      // Ensure we are updating the correct message
                       messages: conv.messages.map(msg => 
                         msg.id === assistantMessage.id
                           ? { 
                               ...msg, 
-                              content: responseContent,
-                              tokenCount
+                              content: responseContent, // Use accumulated content
+                              tokenCount: words.length 
                             }
                           : msg
                       ),
@@ -479,49 +506,36 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         const nonStreamResponse = response as ChatResponse;
         const responseContent = nonStreamResponse.choices[0]?.message?.content || "No response from AI";
         
-        if (placeholderMessageId) {
-          // Update the placeholder message with the real content
-          setConversations(prev => 
-            prev.map(conv => 
-              conv.id === currentConversationId 
-                ? {
-                    ...conv,
-                    messages: conv.messages.map(msg => 
-                      msg.id === placeholderMessageId
-                        ? { 
-                            ...msg, 
-                            content: responseContent,
-                            tokenCount: responseContent.split(/\s+/).length
-                          }
-                        : msg
-                    ),
-                    updatedAt: new Date()
-                  } 
-                : conv
-            )
-          );
-        } else {
-          // Add the complete response as a new message (for other providers)
-          const assistantMessage: Message = {
-            id: generateId(),
-            role: 'assistant',
-            content: responseContent,
-            createdAt: new Date(),
-            tokenCount: responseContent.split(/\s+/).length
-          };
-          
-          setConversations(prev => 
-            prev.map(conv => 
-              conv.id === currentConversationId 
-                ? {
-                    ...conv,
-                    messages: [...conv.messages, assistantMessage],
-                    updatedAt: new Date()
-                  } 
-                : conv
-            )
-          );
-        }
+        // Add the complete response as a new message
+        // Replace placeholder if it exists, otherwise add the new message
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConversationId 
+              ? {
+                  ...conv,
+                  messages: placeholderMessageId
+                    ? conv.messages.map(msg => 
+                        msg.id === placeholderMessageId
+                          ? { 
+                              ...msg, 
+                              content: responseContent, 
+                              tokenCount: countTokens(responseContent) // Calculate token count
+                            }
+                          : msg
+                      )
+                    // If no placeholder (e.g., after edit), add the new assistant message
+                    : [...conv.messages, {
+                        id: generateId(),
+                        role: 'assistant',
+                        content: responseContent,
+                        createdAt: new Date(),
+                        tokenCount: countTokens(responseContent)
+                      }],
+                  updatedAt: new Date()
+                } 
+              : conv
+          )
+        );
         
         // If audio responses are enabled, convert the response to speech, upload to Azure and play it
         if (settings.audioResponseEnabled) {
