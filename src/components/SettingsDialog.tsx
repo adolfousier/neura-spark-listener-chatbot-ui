@@ -102,11 +102,13 @@ export function SettingsDialog() {
                 {/* Add Neura models here */}
                 {localSettings.provider === 'neurarouter' && (
                   <>
-                    <SelectItem value="allam-2-7b">Allam 2.7B</SelectItem>
-                    <SelectItem value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill Llama 70B</SelectItem>
-                    <SelectItem value="deepseek-r1-distill-llama-70b-specdec">DeepSeek R1 Distill Llama 70B (SpecDec)</SelectItem>
-                    <SelectItem value="deepseek-r1-distill-qwen-32b">DeepSeek R1 Distill Qwen 32B</SelectItem>
-                    <SelectItem value="gemma2-9b-it">Gemini 2.0 Flash</SelectItem>
+                    <SelectItem value="gemini-2.5-pro-preview">Gemini 2.5 Pro</SelectItem>
+                    <SelectItem value="gemini-2.5-flash-preview">Gemini 2.5 Flash</SelectItem>
+                    <SelectItem value="meta-llama/llama-4-maverick-17b-128e-instruct">Llama 4 Maverick</SelectItem>
+                    <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">LLama 4 Scout</SelectItem>
+                    <SelectItem value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill Llama 70B (SpecDec)</SelectItem>
+                    <SelectItem value="nvidia/llama-3.1-nemotron-ultra-253b-v1:free">Nvidia Nemotron Ultra 256b</SelectItem>
+                    <SelectItem value="compound-beta">Groq Compound Beta Agentic Model</SelectItem>
                     <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant</SelectItem>
                     <SelectItem value="llama-3.3-70b-specdec">Llama 3.3 70B SpecDec</SelectItem>
                     <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</SelectItem>
@@ -114,25 +116,25 @@ export function SettingsDialog() {
                 )}
                 {localSettings.provider === 'claude' && (
                   <>
-                    <SelectItem value="claude-3-5-opus-latest">Claude 3.5 Opus</SelectItem>
                     <SelectItem value="claude-3-7-sonnet-latest">Claude 3.7 Sonnet</SelectItem>
-                    <SelectItem value="claude-3-5-haiku-latest">Claude 3.5 Haiku</SelectItem>
+                    <SelectItem value="claude-3-7-opus-latest">Claude 3.7 Opus</SelectItem>
+                    <SelectItem value="claude-3-7-haiku-latest">Claude 3.7 Haiku</SelectItem>
                   </>
                 )}
                 {localSettings.provider === 'openai' && (
                   <>
-                    <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                    <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
-                    <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                    <SelectItem value="o4-mini">o4 mini</SelectItem>
+                    <SelectItem value="gpt-4.1">GPT-4.1</SelectItem>
+                    <SelectItem value="o3-mini">o3-mini</SelectItem>
                   </>
                 )}
                 {localSettings.provider === 'openrouter' && (
                   <>
-                    <SelectItem value="google/gemini-2.5-pro">Gemini 2.5 Pro 03-25</SelectItem>
+                    <SelectItem value="google/gemini-2.5-pro-preview">Gemini 2.5 Pro</SelectItem>
                     <SelectItem value="openai/o3-mini">OpenAI o3-mini</SelectItem>
                     <SelectItem value="anthropic/claude-3.7-sonnet">Claude 3.7 Sonnet</SelectItem>
                     <SelectItem value="meta-llama/llama-3-70b-instruct">Llama 3 70B</SelectItem>
-                    <SelectItem value="google/gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
+                    <SelectItem value="google/gemini-2.5-pro-preview">Gemini 2.5 Pro</SelectItem>
                     <SelectItem value="mistralai/mistral-large-2411">Mistral Large 2411</SelectItem>
                   </>
                 )}
@@ -143,9 +145,9 @@ export function SettingsDialog() {
                 )}
                 {localSettings.provider === 'google' && (
                   <>
-                    <SelectItem value="gemini-2.5-pro-exp-03-25">Gemini 2.5 Pro Experimental 03-25</SelectItem>                  
-                    <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
-                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
+                    <SelectItem value="gemini-2.5-pro-preview">Gemini 2.5 Pro</SelectItem>                  
+                    <SelectItem value="gemini-2.5-flash-preview">Gemini 2.5 Pro</SelectItem>
+                    <SelectItem value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</SelectItem>
                     <SelectItem value="code-gecko">Code Gecko</SelectItem>
                     <SelectItem value="imagen-3.0-generate-001">Imagen 3.0 (Image Generation)</SelectItem>
                   </>
