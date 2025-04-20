@@ -124,6 +124,7 @@ export function SettingsDialog() {
                 {localSettings.provider === 'openai' && (
                   <>
                     <SelectItem value="o4-mini">o4 mini</SelectItem>
+                    <SelectItem value="o3">o3</SelectItem>
                     <SelectItem value="gpt-4.1">GPT-4.1</SelectItem>
                     <SelectItem value="o3-mini">o3-mini</SelectItem>
                   </>
