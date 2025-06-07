@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    image: neura-open-source-ui:v0.3.0
+    image: neura-open-source-ui:v0.3.1
     container_name: ${CONTAINER_NAME}
     ports:
       - "${VITE_PORT}:4173"

@@ -1,4 +1,3 @@
-[![Powered by Neura AI](https://img.shields.io/badge/Powered%20by-Neura%20AI-7f56da)](https://meetneura.ai)
 [![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev)
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)](https://prisma.io)
@@ -8,7 +7,7 @@
 [![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white)](https://eslint.org/)
 [![Prettier](https://img.shields.io/badge/prettier-1A2C34?style=for-the-badge&logo=prettier&logoColor=F7BA3E)](https://prettier.io/)
 
-[![Neura OS Chatbot UI](https://img.shields.io/badge/Neura%20BSR%20Inspector-7f56da)](https://open-source-chatbot-ui.meetneura.ai)
+[![Neura OS Chatbot UI](https://img.shields.io/badge/Neura%20OS%20Chatbot%20UI-7f56da)](https://open-source-chatbot-ui.meetneura.ai)[![Powered by Neura AI](https://img.shields.io/badge/Powered%20by-Neura%20AI-7f56da)](https://meetneura.ai)
 
 # Neura AI Open Source Chatbot UI - A complete multi-service AI chat interface for everyone 🤝
 
@@ -193,12 +192,14 @@ npm run format
 
 ## Change Log
 
+### v0.3.1
+
+**Fix**: README update and MarkdownRendered refactor
+
 ### v0.3.0
 
-**Key Changes Made:**
-
 1.  **Updated AI Models**: Updated OpenAI, Anthropic, OpenRouter, Groq, and Neura models.
-2.  **Fixed Diagram Resizing/Re-rendering Issue**:
+2.  **Fixed Diagram Resizing/Re-rendering Issue**: Workd better with Sonnet, Opus, o4-mini etc...
     *   Added `isRendered` state to prevent multiple renders of the same diagram.
     *   Used empty dependency array `[]` in Mermaid initialization to run only once.
     *   Added debouncing (300ms) to theme changes to prevent excessive re-renders.
@@ -211,16 +212,6 @@ npm run format
     *   Debounced theme changes to avoid rapid re-initialization.
 4.  **Chat ID's Browser Path**:
     *   Added a new `chatId` to the browser path
-
-**Better error handling and state management.**
-
-**The Mermaid diagrams will now:**
-
-*   ✅ Render only once (no more constant resizing).
-*   ✅ Be fully responsive across all device sizes.
-*   ✅ Allow users to download the diagram as an SVG file.
-*   ✅ Have better performance with fewer re-renders.
-*   ✅ Maintain proper aspect ratios on different screen sizes.
 
 ## License
 

@@ -49,24 +49,19 @@ export default function ChatPage() {
   }, [isMobile, sidebarOpen]);
 
   useEffect(() => {
-    console.log('ChatPage useEffect 1: conversationId', conversationId, 'currentConversationId', currentConversationId);
     if (conversationId) {
       if (conversationId !== currentConversationId) {
-        console.log('ChatPage: Selecting conversation', conversationId);
         selectConversation(conversationId);
       }
     } else {
       if (!currentConversationId) {
-        console.log('ChatPage: Creating new conversation');
         createNewConversation();
       }
     }
   }, [conversationId, currentConversationId, selectConversation, createNewConversation]);
 
   useEffect(() => {
-    console.log('ChatPage useEffect 2: currentConversationId', currentConversationId, 'conversationId', conversationId);
-    if (currentConversationId && currentConversationId !== conversationId) {
-      console.log('ChatPage: Navigating to', `/chat/${currentConversationId}`);
+    if (currentConversationId && conversationId && currentConversationId !== conversationId) {
       navigate(`/chat/${currentConversationId}`, { replace: true });
     }
   }, [currentConversationId, conversationId, navigate]);
