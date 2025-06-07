@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useChat } from "@/context/ChatContext";
 import { Header } from "@/components/Header";
 import { SidebarConversations } from "@/components/SidebarConversations";
@@ -12,7 +12,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export default function ChatPage() {
-  const { conversations, currentConversationId } = useChat();
+  const { conversations, currentConversationId, selectConversation, createNewConversation } = useChat();
+  const { conversationId } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -47,19 +48,41 @@ export default function ChatPage() {
     };
   }, [isMobile, sidebarOpen]);
 
+  useEffect(() => {
+    console.log('ChatPage useEffect 1: conversationId', conversationId, 'currentConversationId', currentConversationId);
+    if (conversationId) {
+      if (conversationId !== currentConversationId) {
+        console.log('ChatPage: Selecting conversation', conversationId);
+        selectConversation(conversationId);
+      }
+    } else {
+      if (!currentConversationId) {
+        console.log('ChatPage: Creating new conversation');
+        createNewConversation();
+      }
+    }
+  }, [conversationId, currentConversationId, selectConversation, createNewConversation]);
+
+  useEffect(() => {
+    console.log('ChatPage useEffect 2: currentConversationId', currentConversationId, 'conversationId', conversationId);
+    if (currentConversationId && currentConversationId !== conversationId) {
+      console.log('ChatPage: Navigating to', `/chat/${currentConversationId}`);
+      navigate(`/chat/${currentConversationId}`, { replace: true });
+    }
+  }, [currentConversationId, conversationId, navigate]);
+
   // Find the current conversation
   const currentConversation = conversations.find(
     (conv) => conv.id === currentConversationId
   );
 
-  // Handle case when no conversations exist (should not happen but just in case)
+  // Handle case when no conversation is selected or found
   if (!currentConversation) {
     return (
       <div className="flex flex-col h-screen">
         <Header />
         <div className="flex flex-col items-center justify-center flex-1">
-          <p className="text-lg mb-4">No conversation found</p>
-          <Button onClick={() => navigate("/")}>Go to Home</Button>
+          <p className="text-lg mb-4">Loading conversation or creating a new one...</p>
         </div>
       </div>
     );

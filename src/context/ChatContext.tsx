@@ -6,6 +6,7 @@ import { sendChatRequest, streamChatResponse } from "@/services/apiService";
 import { convertTextToSpeech, playAudio, convertAndUploadTextToSpeech } from "@/services/audioService";
 import { countTokens } from '@/lib/tokenizer';
 
+
 type ChatContextType = {
   conversations: Conversation[];
   currentConversationId: string | null;
@@ -57,6 +58,7 @@ const ChatContext = createContext<ChatContextType>({
 });
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [settings, setSettings] = useState<Settings>(getDefaultSettings());

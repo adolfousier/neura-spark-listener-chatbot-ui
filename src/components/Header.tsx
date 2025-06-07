@@ -23,7 +23,7 @@ export function Header({ className }: HeaderProps) {
     )}>
       <div className="flex items-center space-x-2">
         <Logo />
-        <h1 className="text-xl font-semibold tracking-tight">NEURA AI ASSISTANT</h1>
+        <h1 className="text-xl font-semibold tracking-tight">NEURA AI CHAT</h1>
       </div>
       
       <div className="flex items-center space-x-3">

@@ -28,6 +28,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
 
 
 
@@ -41,5 +42,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-commands.md

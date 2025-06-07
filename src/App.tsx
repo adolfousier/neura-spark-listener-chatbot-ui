@@ -59,7 +59,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/chat/:conversationId?" element={<ChatPage />} />
             <Route path="/templates" element={<TemplatesPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
