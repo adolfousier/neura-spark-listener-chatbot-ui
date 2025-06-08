@@ -54,8 +54,8 @@ Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
 - Image Display: The chatbot can display images received in the conversation.
 Attachment Preview: Shows thumbnails for uploaded images and file information for documents.
 - File Size Limits: Enforces configurable size limits based on Flowise settings.
-Drag-and-Drop Functionality: Supports drag-and-drop for uploading files and images.
-Visual Feedback: Displays loading animations and progress indicators during operations.
+- Drag-and-Drop Functionality: Supports drag-and-drop for uploading files and images.
+- Visual Feedback: Displays loading animations and progress indicators during operations.
 
 ## App Preview
 

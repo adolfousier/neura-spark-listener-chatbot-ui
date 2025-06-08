@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { Conversation, Message, Settings, Provider, Template, ChatResponse, ChatRequest } from '@/types';
-import { generateId, getDefaultSettings, getFirstMessage } from '@/lib/utils';
+import { generateId, getDefaultSettings, getFirstMessage, getDefaultArenaSettings } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
 import { sendChatRequest } from "@/services/apiService";
 import { streamChatResponse } from "@/lib/utils";
@@ -36,7 +36,7 @@ type ChatContextType = {
 const ChatContext = createContext<ChatContextType>({
   conversations: [],
   currentConversationId: null,
-  settings: getDefaultSettings(),
+  settings: { ...getDefaultSettings(), ...getDefaultArenaSettings() },
   isLoading: false,
   isStreaming: false,
   isInputDisabled: false,
@@ -62,7 +62,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [settings, setSettings] = useState<Settings>(getDefaultSettings());
+  const [settings, setSettings] = useState<Settings>({ ...getDefaultSettings(), ...getDefaultArenaSettings() });
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isInputDisabled, setIsInputDisabled] = useState(false);
@@ -101,15 +101,18 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     if (savedSettings) {
       try {
         const parsedSettings = JSON.parse(savedSettings);
-        setSettings(parsedSettings);
+        // Ensure new arena settings are present if loading old settings
+        setSettings(prev => ({ ...getDefaultArenaSettings(), ...prev, ...parsedSettings }));
         updateTheme(parsedSettings.template, parsedSettings.darkMode);
       } catch (error) {
         console.error('Error parsing saved settings:', error);
-        const defaults = getDefaultSettings();
+        const defaults = { ...getDefaultSettings(), ...getDefaultArenaSettings() };
+        setSettings(defaults);
         updateTheme(defaults.template, defaults.darkMode);
       }
     } else {
-      const defaults = getDefaultSettings();
+      const defaults = { ...getDefaultSettings(), ...getDefaultArenaSettings() };
+      setSettings(defaults);
       updateTheme(defaults.template, defaults.darkMode);
     }
   }, []);

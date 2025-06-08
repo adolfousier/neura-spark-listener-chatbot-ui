@@ -32,6 +32,13 @@ export type Settings = {
   contextWindowSize: number; // Number of message pairs to include in context
   webSearchEnabled: boolean; // Whether to use web search capability
   audioResponseEnabled: boolean; // Whether to convert AI responses to speech
+  // Arena mode specific settings
+  providerA?: Provider;
+  modelA?: string;
+  temperatureA?: number;
+  providerB?: Provider;
+  modelB?: string;
+  temperatureB?: number;
 };
 
 export type ChatRequest = {

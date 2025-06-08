@@ -25,15 +25,14 @@ export function getProviderFromEnv(): Provider {
   return ['claude', 'openai', 'flowise', 'openrouter', 'neurarouter', 'google'].includes(provider) ? provider : 'groq';
 }
 
-export function getDefaultSettings(): Settings {
+export const getDefaultSettings = (): Omit<Settings, 'providerA' | 'modelA' | 'temperatureA' | 'providerB' | 'modelB' | 'temperatureB'> => {
   const provider = getProviderFromEnv();
   let defaultModel = import.meta.env.VITE_GROQ_API_MODEL || 'deepseek-r1-distill-llama-70b';
-  
+
   // Set appropriate default model based on provider
   if (provider === 'google') {
     defaultModel = import.meta.env.VITE_GOOGLE_API_MODEL || 'gemini-2.0-flash';
   }
-  
   return {
     provider,
     model: defaultModel,
@@ -45,9 +44,18 @@ export function getDefaultSettings(): Settings {
     systemPrompt: import.meta.env.DEFAULT_SYSTEM_PROMPT || '',
     contextWindowSize: 5,
     webSearchEnabled: false, // Web search disabled by default
-    audioResponseEnabled: false, // Audio responses disabled by default
+    audioResponseEnabled: false,
   };
-}
+};
+
+export const getDefaultArenaSettings = (): Pick<Settings, 'providerA' | 'modelA' | 'temperatureA' | 'providerB' | 'modelB' | 'temperatureB'> => ({
+  providerA: 'neurarouter',
+  modelA: 'openrouter/deepseek-r1-0528:free',
+  temperatureA: 0.7,
+  providerB: 'neurarouter',
+  modelB: 'openrouter/deepseek-r1-0528:free',
+  temperatureB: 0.7,
+});
 
 export function truncate(str: string, length: number): string {
   if (str.length <= length) return str;

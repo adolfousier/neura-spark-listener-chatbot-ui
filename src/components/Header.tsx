@@ -10,9 +10,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 interface HeaderProps {
   className?: string;
+  arenaMode?: boolean; // Add arenaMode prop
 }
 
-export function Header({ className }: HeaderProps) {
+export function Header({ className, arenaMode }: HeaderProps) { // Destructure arenaMode
   const { createNewConversation, settings, toggleWebSearch, toggleAudioResponse } = useChat();
   const location = useLocation();
   
@@ -94,7 +95,7 @@ export function Header({ className }: HeaderProps) {
         </TooltipProvider>
         
         <ModeToggle />
-        <SettingsDialog />
+        <SettingsDialog arenaMode={arenaMode} /> 
       </div>
     </header>
   );

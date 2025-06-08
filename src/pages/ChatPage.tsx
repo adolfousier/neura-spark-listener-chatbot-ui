@@ -6,14 +6,19 @@ import { SidebarConversations } from "@/components/SidebarConversations";
 import { MessageList } from "@/components/MessageList";
 import { MessageInput } from "@/components/MessageInput";
 import { Button } from "@/components/ui/button";
-import { PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { PanelLeftOpen, PanelLeftClose, ArrowLeftRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
+// Arena Mode Configuration
+const CHAT_ARENA_ENABLED = import.meta.env.VITE_CHAT_ARENA_ENABLED === 'true';
+
 export default function ChatPage() {
-  const { conversations, currentConversationId, selectConversation, createNewConversation } = useChat();
+  const { conversations, currentConversationId, selectConversation, createNewConversation, settings } = useChat();
   const { conversationId } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [arenaMode, setArenaMode] = useState(false);
+  
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -23,6 +28,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (isMobile) {
       setSidebarOpen(false);
+      setArenaMode(false); // Disable arena mode on mobile
     }
   }, [isMobile]);
 
@@ -49,38 +55,38 @@ export default function ChatPage() {
 
   // Handle URL parameter changes (when user clicks sidebar or navigates directly)
   useEffect(() => {
-    if (conversationId && conversationId !== currentConversationId) {
+    if (conversationId && conversationId !== currentConversationId && !arenaMode) {
       const conversationExists = conversations.find(c => c.id === conversationId);
       if (conversationExists) {
         selectConversation(conversationId);
       }
     }
-  }, [conversationId]);
+  }, [conversationId, arenaMode]);
 
   // Handle context changes (when new conversation is created)
   useEffect(() => {
-    if (currentConversationId && (!conversationId || currentConversationId !== conversationId)) {
+    if (currentConversationId && (!conversationId || currentConversationId !== conversationId) && !arenaMode) {
       navigate(`/chat/${currentConversationId}`, { replace: true });
     }
-  }, [currentConversationId]);
+  }, [currentConversationId, arenaMode]);
 
   // Handle initial load - only create if we have no conversations and no URL param
   useEffect(() => {
-    if (!conversationId && !currentConversationId && conversations.length === 0) {
+    if (!conversationId && !currentConversationId && conversations.length === 0 && !arenaMode) {
       const timer = setTimeout(() => {
         createNewConversation();
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [conversations.length]);
+  }, [conversations.length, arenaMode]);
 
   // Find the current conversation
   const currentConversation = conversations.find(
     (conv) => conv.id === currentConversationId
   );
 
-  // Handle case when no conversation is selected or found
-  if (!currentConversation) {
+  // Handle case when no conversation is selected or found (non-arena mode)
+  if (!arenaMode && !currentConversation) {
     return (
       <div className="flex flex-col h-screen">
         <Header />
@@ -93,7 +99,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header />
+      <Header arenaMode={arenaMode} /> {/* Pass arenaMode to Header */} 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside
@@ -108,6 +114,20 @@ export default function ChatPage() {
             "w-80 transition-all duration-300",
             !sidebarOpen && "opacity-0"
           )}>
+            <div className="p-4 border-b">
+              {CHAT_ARENA_ENABLED && !isMobile && (
+                <Button
+                  variant={arenaMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setArenaMode(!arenaMode)}
+                  className="w-full mb-4"
+                >
+                  <ArrowLeftRight className="h-4 w-4 mr-2" />
+                  {arenaMode ? "Exit Arena" : "Enter Chat Arena"}
+                </Button>
+              )}
+            </div>
+            
             <SidebarConversations />
           </div>
         </aside>
@@ -133,22 +153,76 @@ export default function ChatPage() {
             </span>
           </Button>
           
-          <div className="flex-1 overflow-hidden">
-            <MessageList conversation={currentConversation} />
-          </div>
-          
-          <MessageInput />
+          {!arenaMode ? (
+            // Regular chat mode
+            <>
+              <div className="flex-1 overflow-hidden">
+                <MessageList conversation={currentConversation!} />
+              </div>
+              <MessageInput arenaMode={arenaMode} /> {/* Pass arenaMode to MessageInput */}
+            </>
+          ) : (
+            // Arena mode - split view
+            <div className="flex-1 flex flex-col">
+              {/* Split Chat Views */}
+              <div className="flex-1 flex overflow-hidden">
+                {/* Left Chat */}
+                <div className="flex-1 flex flex-col border-r">
+                  <div className="p-3 border-b bg-primary/5">
+                    <span className="text-sm font-medium">Model A</span>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <MessageList conversation={currentConversation!} />
+                  </div>
+                </div>
+                
+                {/* Right Chat */}
+                <div className="flex-1 flex flex-col">
+                  <div className="p-3 border-b bg-secondary/5">
+                    <span className="text-sm font-medium">Model B</span>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <MessageList conversation={currentConversation!} />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Arena Message Input */}
+              <div className="border-t">
+                <MessageInput arenaMode={arenaMode} /> {/* Pass arenaMode to MessageInput in arena mode */}
+              </div>
+            </div>
+          )}
           
           {/* Footer */}
           <footer className="py-2 px-4 text-center text-sm text-muted-foreground border-t">
-            <a 
-              href="https://meetneura.ai" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-              Powered by Neura AI
-            </a>
+            {arenaMode ? (
+              <div className="flex flex-col items-center">
+                <div className="flex justify-center items-center space-x-4">
+                  <span>Model A: {settings.modelA || 'Not Selected'}</span>
+                  <span>Model B: {settings.modelB || 'Not Selected'}</span>
+                </div>
+                <a 
+                  href="https://meetneura.ai" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors mt-1"
+                >
+                  Powered by Neura AI
+                </a>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <a 
+                  href="https://meetneura.ai" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors mt-1"
+                >
+                  Powered by Neura AI
+                </a>
+              </div>
+            )}
           </footer>
         </main>
       </div>

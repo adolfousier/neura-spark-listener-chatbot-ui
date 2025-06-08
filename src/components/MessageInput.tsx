@@ -10,7 +10,15 @@ import { ChatResponse } from "@/types";
 import { generateId } from "@/lib/utils";
 import { AudioRecordButton } from "@/components/AudioRecordButton";
 
-export function MessageInput() {
+// Arena Mode Configuration
+const CHAT_ARENA_ENABLED = import.meta.env.VITE_CHAT_ARENA_ENABLED === 'true';
+
+interface MessageInputProps {
+  className?: string;
+  arenaMode?: boolean; // Add arenaMode prop
+}
+
+export function MessageInput({ className, arenaMode }: MessageInputProps) { // Destructure arenaMode
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReasoning, setIsReasoning] = useState(false);
@@ -236,9 +244,11 @@ export function MessageInput() {
       </div>
       
       <div className="flex justify-center items-center mt-2">
-        <div className="text-xs text-muted-foreground opacity-75">
-          AI powered by {settings.provider.charAt(0).toUpperCase() + settings.provider.slice(1)} • Model: {settings.model}
-        </div>
+        {!arenaMode && (
+          <div className="text-xs text-muted-foreground">
+            AI Powered by {`${settings.provider}/${settings.model}`}
+          </div>
+        )}
       </div>
     </form>
   );
