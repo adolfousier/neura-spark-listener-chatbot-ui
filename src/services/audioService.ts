@@ -1,6 +1,6 @@
-import { textToSpeech } from './api/openai/tts';
-import { speechToText } from './api/groq/stt';
-import { uploadAudioToAzure } from './api/azure/blob';
+import { textToSpeech } from './api/tts/openai/tts';
+import { speechToText } from './api/stt/groq';
+import { uploadAudioToAzure } from './api/storage/azure';
 import {
   getOpenAITTSApiKey,
   getOpenAITTSModel,

@@ -19,13 +19,13 @@ export async function uploadAudioToAzure(
   
   const accountName = import.meta.env.VITE_AZURE_STORAGE_ACCOUNT_NAME;
   const containerName = import.meta.env.VITE_AZURE_STORAGE_CONTAINER_ID;
-  const sasToken = import.meta.env.VITE_AZURE_STORAGE_SAS_TOKEN;
+  const envSasToken = import.meta.env.VITE_AZURE_STORAGE_SAS_TOKEN;
   
-  if (!accountName || !containerName || !sasToken) {
+  if (!accountName || !containerName || !envSasToken) {
     console.error('[Azure Blob] Missing credentials:', {
       hasAccountName: !!accountName,
       hasContainerName: !!containerName,
-      hasSasToken: !!sasToken
+      hasSasToken: !!envSasToken
     });
     throw new Error('Azure Storage credentials not configured');
   }
@@ -33,7 +33,7 @@ export async function uploadAudioToAzure(
   try {
     // Create blob service client with SAS token
     const blobServiceClient = new BlobServiceClient(
-      `https://${accountName}.blob.core.windows.net${sasToken}`
+      `https://${accountName}.blob.core.windows.net${envSasToken}`
     );
     const containerClient = blobServiceClient.getContainerClient(containerName);
     
@@ -53,11 +53,14 @@ export async function uploadAudioToAzure(
       }
     });
     
-    // Get the URL with SAS token
+    // Dynamically import required Azure components
+    const { BlobSASPermissions, SASProtocol } = await import('@azure/storage-blob');
+    
+    // Generate SAS URL
     const sasUrl = await blockBlobClient.generateSasUrl({
-      permissions: 'r', // Read only
-      expiresOn: new Date(new Date().valueOf() + 24 * 60 * 60 * 1000), // 24 hours
-      protocol: 'https',
+      permissions: BlobSASPermissions.parse('r'),
+      expiresOn: new Date(new Date().valueOf() + 24 * 60 * 60 * 1000),
+      protocol: SASProtocol.Https, // Use HTTPS only
       cacheControl: 'no-cache',
       contentDisposition: 'inline',
       contentType: 'audio/mpeg'
@@ -73,4 +76,4 @@ export async function uploadAudioToAzure(
     console.error('[Azure Blob] Error uploading audio:', error);
     throw error;
   }
-} 
+}

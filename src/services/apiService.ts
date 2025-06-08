@@ -1,11 +1,11 @@
 import { getApiKeyForProvider, getApiUrlForProvider} from "@/lib/utils";
 import { ChatRequest, ChatResponse, Provider } from "@/types";
-import { sendGoogleRequest } from "./api/google";
-import { sendOpenRouterRequest } from "./api/openrouter";
-import { sendClaudeRequest } from "./api/anthropic";
-import { sendOpenAICompatibleRequest } from "./api/openai-compatible";
-import { sendFlowiseRequest } from "./api/flowise";
-import { sendNeuraRequest } from "./api/neurarouter";
+import { sendGoogleRequest } from "./api/chat/providers/google";
+import { sendOpenRouterRequest } from "./api/chat/providers/openrouter";
+import { sendClaudeRequest } from "./api/chat/providers/anthropic";
+import { sendOpenAICompatibleRequest } from "./api/chat/providers/openai-compatible";
+import { sendFlowiseRequest } from "./api/chat/providers/flowise";
+import { sendNeuraRequest } from "./api/chat/providers/neurarouter";
 
 /**
  * This file contains the API service for sending chat requests to various providers
