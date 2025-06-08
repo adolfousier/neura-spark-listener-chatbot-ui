@@ -9,7 +9,7 @@ lerna-debug.log*
 
 
 /data
-/prisma
+prisma/db
 node_modules
 dist
 dist-ssr
