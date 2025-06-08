@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { Conversation, Message, Settings, Provider, Template, ChatResponse, ChatRequest } from '@/types';
 import { generateId, getDefaultSettings, getFirstMessage } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
-import { sendChatRequest, streamChatResponse } from "@/services/apiService";
+import { sendChatRequest } from "@/services/apiService";
+import { streamChatResponse } from "@/lib/utils";
 import { convertTextToSpeech, playAudio, convertAndUploadTextToSpeech } from "@/services/audioService";
 import { countTokens } from '@/lib/tokenizer';
 

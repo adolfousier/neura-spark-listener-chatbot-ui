@@ -193,6 +193,10 @@ npm run format
 
 ## Change Log
 
+### v0.3.3 
+
+**apiService.ts Refactor**
+
 ### v0.3.2 
 
 **Fix**: Mermaid rendering.
