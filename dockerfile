@@ -22,7 +22,7 @@ RUN npm install firebase@latest
 COPY . .
 
 # Create necessary directories and set permissions
-RUN mkdir -p src/data/audio && \
+RUN mkdir -p app/src/data/audio && \
   chmod -R 777 src/data
 
 # First Time - Generate Prisma Client

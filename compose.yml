@@ -3,13 +3,16 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    image: neura-open-source-ui:v0.3.4
+    image: neura-open-source-ui:v0.3.5
     container_name: ${CONTAINER_NAME}
     ports:
       - "${VITE_PORT}:4173"
     env_file:
       - .env
     environment:
+      # UI Chatbot Settings
+      - BOXED_CHAT_UI=${BOXED_CHAT_UI}
+
       # Optional backend with defaults (Neura/Groq/OpenRouter/Flowise/Openai/Claude)
       - VITE_BACKEND_SERVICE_PROVIDER=${VITE_BACKEND_SERVICE_PROVIDER}
 
@@ -63,7 +66,7 @@ services:
       - ./data/audio:/app/data/audio
       #- ./prisma:/app/prisma
       #- ./prisma/dev.db:/app/prisma/dev.db
-      - ./prisma/dev.db:/app/prisma/dev.db
+      - ./prisma/db/dev.db:/app/prisma/db/dev.db
     logging:
       driver: "json-file"
       options:

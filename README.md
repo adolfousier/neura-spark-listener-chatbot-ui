@@ -23,6 +23,7 @@ Neura Spark Listener is a modern, customizable open-source AI chatbot interface 
 - **Context Window Size Setting**: Choose from 1 pair to the last 10 pair to keep context with the apiService.
 - **Enable Automatic Audio Playback Toggle**: Automatically play voice recording and assistant speech response, allowing for natural conversations with the user interface
 - **Mermaid Diagram and Charts Support**: Display and download as .svg any Mermaid diagrams and charts in your conversations
+- Boxed/Full Screen Mode: Allows users to switch between a boxed chatbot interface and a fullscreen experience.
 - **Speech-to-Text**: Easily convert voice recordings to text
 - **Text-to-Speech**: Convert text to speech to maintain voice conversations
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
@@ -52,7 +53,6 @@ Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
 Attachment Preview: Shows thumbnails for uploaded images and file information for documents.
 - File Size Limits: Enforces configurable size limits based on Flowise settings.
 Drag-and-Drop Functionality: Supports drag-and-drop for uploading files and images.
-- Boxed/Full Screen Mode: Allows users to switch between a boxed chat interface and a fullscreen experience.
 - Personalized Welcome Message: Allows defining a personalized welcome message to greet users upon entering the chat.
 Visual Feedback: Displays loading animations and progress indicators during operations.
 
@@ -192,6 +192,19 @@ npm run format
 ```
 
 ## Change Log
+
+### v0.3.5 
+
+- New Component Created : Added a new component `WebChatAssistant.tsx` . This component is responsible for:
+- Displaying a chat bubble button using the /mingcute_chat.png image when the VITE_BOXED_CHAT_UI environment variable is set to true .
+- Toggling a fixed-position, boxed chat window when the bubble is clicked.
+- Integrating the existing `MessageList` and `MessageInput` components within this boxed UI.
+- Ensuring that a chat conversation is active (either by selecting an existing one or creating a new one) when the chat window is opened, utilizing the `useChat` hook.
+- Application Integration : The new `WebChatAssistant` component has been integrated into your main `App.tsx` . It's rendered conditionally based on the VITE_BOXED_CHAT_UI environment variable, allowing it to appear globally across your application when enabled.
+
+### v0.3.4
+
+**Fix**: Azure blob storage type missmatch 
 
 ### v0.3.3 
 

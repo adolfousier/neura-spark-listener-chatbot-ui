@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import ChatPage from "./pages/ChatPage";
 import TemplatesPage from "./pages/TemplatesPage";
 import NotFound from "./pages/NotFound";
+import WebChatAssistant from "./components/WebChatAssistant"; // Added import
 import { useEffect } from "react";
 
 // Create new query client instance
@@ -49,7 +50,27 @@ function ThemeInitializer() {
   return null;
 }
 
-const App = () => (
+const App = () => {
+  const isBoxedChatUI = import.meta.env.VITE_BOXED_CHAT_UI === 'true';
+
+  if (isBoxedChatUI) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <ChatProvider>
+            <ThemeInitializer />
+            <Toaster />
+            <Sonner />
+            {/* Boxed UI doesn't need BrowserRouter or Routes, just the assistant */}
+            <WebChatAssistant />
+          </ChatProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    );
+  }
+
+  // Default full app rendering
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ChatProvider>
@@ -68,5 +89,6 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
 );
+}
 
 export default App;
