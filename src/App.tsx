@@ -51,7 +51,7 @@ function ThemeInitializer() {
 }
 
 const App = () => {
-  const isBoxedChatUI = import.meta.env.VITE_BOXED_CHAT_UI === 'true';
+  const isBoxedChatUI = import.meta.env.VITE_BOXED_CHATBUBBLE_MODE_ENABLED === 'true';
 
   if (isBoxedChatUI) {
     return (

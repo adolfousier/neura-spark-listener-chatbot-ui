@@ -10,7 +10,7 @@ import { ModeToggle } from './ModeToggle';
 import { SettingsDialog } from './SettingsDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const BOXED_CHAT_UI = import.meta.env.VITE_BOXED_CHAT_UI === 'true';
+const BOXED_CHAT_UI = import.meta.env.VITE_BOXED_CHATBUBBLE_MODE_ENABLED === 'true';
 
 const WebChatAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);

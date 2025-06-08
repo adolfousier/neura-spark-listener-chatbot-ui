@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    image: neura-open-source-ui:v0.3.6
+    image: neura-open-source-ui:v0.3.7
     container_name: ${CONTAINER_NAME}
     ports:
       - "${VITE_PORT}:4173"
@@ -11,57 +11,55 @@ services:
       - .env
     environment:
       # UI Chatbot Settings
-      - BOXED_CHAT_UI=${BOXED_CHAT_UI}
+      - VITE_BOXED_CHATBUBBLE_MODE_ENABLED=${VITE_BOXED_CHATBUBBLE_MODE_ENABLED}
       - DEFAULT_SYSTEM_PROMPT=${DEFAULT_SYSTEM_PROMPT}
       - DEFAULT_WELCOME_MESSAGE=${DEFAULT_WELCOME_MESSAGE}
       
       # Optional backend with defaults (Neura/Groq/OpenRouter/Flowise/Openai/Claude)
       - VITE_BACKEND_SERVICE_PROVIDER=${VITE_BACKEND_SERVICE_PROVIDER}
-
+      
       # Neura service settings
       - VITE_NEURA_ROUTER_API_KEY=${VITE_NEURA_ROUTER_API_KEY}
       - VITE_NEURA_ROUTER_API_URL=${VITE_NEURA_ROUTER_API_URL}
-
+      
       # Groq service settings
       - VITE_GROQ_API_KEY=${VITE_GROQ_API_KEY}
       - VITE_GROQ_API_MODEL=${VITE_GROQ_API_MODEL}
       - VITE_STREAM_ENABLED=${VITE_STREAM_ENABLED}
       - VITE_REASONING_FORMAT=${VITE_REASONING_FORMAT}
-
+      - VITE_GROQ_STT_API_MODEL=${VITE_GROQ_STT_API_MODEL}
+      
       # Prisma service settings
       - DATABASE_URL=${DATABASE_URL}
-
+      
       # Flowise service settings
       - VITE_FLOWISE_API_URL=${VITE_FLOWISE_API_URL}
       - VITE_FLOWISE_CHATFLOW_ID=${VITE_FLOWISE_CHATFLOW_ID}
       - VITE_FLOWISE_API_KEY=${VITE_FLOWISE_API_KEY}
-
-      # Open Router service settings
+      
+      # OpenRouter service settings
       - VITE_OPENROUTER_API_KEY=${VITE_OPENROUTER_API_KEY}
       - VITE_OPENROUTER_API_URL=${VITE_OPENROUTER_API_URL}
       - VITE_OPENROUTER_HTTP_REFERER=${VITE_OPENROUTER_HTTP_REFERER}
       - VITE_OPENROUTER_X_TITLE=${VITE_OPENROUTER_X_TITLE}
       
-      # Openai service settings
+      # OpenAI service settings
       - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
-
+      - VITE_OPENAI_TTS_API_MODEL=${VITE_OPENAI_TTS_API_MODEL}
+      - VITE_OPENAI_TTS_API_VOICE=${VITE_OPENAI_TTS_API_VOICE}
+      
       # Claude service settings
       - VITE_CLAUDE_API_KEY=${VITE_CLAUDE_API_KEY}
-
-      # Google configuration
+      
+      # Google AI configuration
       - VITE_GOOGLE_API_KEY=${VITE_GOOGLE_API_KEY}
       - VITE_GOOGLE_API_MODEL=${VITE_GOOGLE_API_MODEL}
       - VITE_GOOGLE_API_URL=${VITE_GOOGLE_API_URL}
-
+      
       # Azure Storage settings
       - VITE_AZURE_STORAGE_CONTAINER_ID=${VITE_AZURE_STORAGE_CONTAINER_ID}
       - VITE_AZURE_STORAGE_ACCOUNT_NAME=${VITE_AZURE_STORAGE_ACCOUNT_NAME}
       - VITE_AZURE_STORAGE_SAS_TOKEN=${VITE_AZURE_STORAGE_SAS_TOKEN}
-
-      # Speech-to-Text and Text-to-Speech settings
-      - VITE_OPENAI_TTS_API_MODEL=${VITE_OPENAI_TTS_API_MODEL}
-      - VITE_OPENAI_TTS_API_VOICE=${VITE_OPENAI_TTS_API_VOICE}
-      - VITE_GROQ_STT_API_MODEL=${VITE_GROQ_STT_API_MODEL} 
 
     volumes:
       - ./public:/app/public
