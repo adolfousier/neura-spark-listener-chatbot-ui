@@ -64,8 +64,8 @@ Visual Feedback: Displays loading animations and progress indicators during oper
 ### Desktop Chat View
 ![Desktop Chat View](./public/og-image.png)
 
-### Mobile Chat View
-![Mobile Chat View](https://neuraai.blob.core.windows.net/uploads/neura-spark-chatbot-preview-mobile.png)
+### Chat Bubble Boxed View
+![Chat Bubble View](./public/neura-spark-chatbubble-preview.png)![Chat Bubble View](./public/neura-spark-bubble-preview.png)
 
 ## Getting Started
 
