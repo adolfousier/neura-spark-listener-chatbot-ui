@@ -43,8 +43,10 @@ Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
 - **Message Streaming**: Real-time message streaming for a responsive chat experience
 - **Responsive Design**: Works smoothly on desktop and mobile devices
 - **Customizable Settings**: Adjust parameters like temperature, model selection, and more
+- Personalized Welcome Message: Allows defining a personalized welcome message to greet users upon entering the chat.
 
 ## Comming Soon
+- Chat Arena: Comparison side by side between two different models
 - User Account Management: Allow users to store and manage own conversations logging into their account
 - Follow-up Prompts: Suggest follow-up questions to enhance user engagement.
 - File Upload Support: Upload and process various file types including TXT, PDF, DOC, DOCX, CSV, JSON, and XML.
@@ -53,7 +55,6 @@ Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
 Attachment Preview: Shows thumbnails for uploaded images and file information for documents.
 - File Size Limits: Enforces configurable size limits based on Flowise settings.
 Drag-and-Drop Functionality: Supports drag-and-drop for uploading files and images.
-- Personalized Welcome Message: Allows defining a personalized welcome message to greet users upon entering the chat.
 Visual Feedback: Displays loading animations and progress indicators during operations.
 
 ## App Preview
