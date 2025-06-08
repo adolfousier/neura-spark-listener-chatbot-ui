@@ -13,7 +13,7 @@
 
 ## Overview
 
-Neura AI is a modern, customizable AI chatbot interface that supports persistent conversations prisma database, web research, multiple AI services, and visual templates. It's built with Vite, React, TypeScript, shadcn UI and more modern web technologies to provide an exceptional user experience.
+Neura Spark Listener is a modern, customizable open-source AI chatbot interface that supports persistent conversations with persistent database, web research, multiple LLM services, and visual templates. It's built with Vite, React, TypeScript, shadcn UI and more modern web technologies to provide an exceptional user experience.
 
 ## Features
 
@@ -22,6 +22,7 @@ Neura AI is a modern, customizable AI chatbot interface that supports persistent
 - **System Prompt Management**: Easily manage and switch between multiple system prompts.
 - **Context Window Size Setting**: Choose from 1 pair to the last 10 pair to keep context with the apiService.
 - **Enable Automatic Audio Playback Toggle**: Automatically play voice recording and assistant speech response, allowing for natural conversations with the user interface
+- **Mermaid Diagram and Charts Support**: Display and download as .svg any Mermaid diagrams and charts in your conversations
 - **Speech-to-Text**: Easily convert voice recordings to text
 - **Text-to-Speech**: Convert text to speech to maintain voice conversations
 - **Customizable Templates**: Choose from three modern visual templates (Minimal, Vibrant, and Elegant)
@@ -191,6 +192,23 @@ npm run format
 ```
 
 ## Change Log
+
+### v0.3.2 
+
+**Fix**: Mermaid rendering.
+
+Key Changes:
+
+- Zero Dependencies: useEffect([], []) - NO dependencies,
+ renders once on mount only
+- Global Cache: Results are cached in window.mermaidCache
+ - same diagram never re-renders
+- Direct DOM Manipulation: Uses innerHTML directly instea
+d of React state
+- Multiple Guards: hasRenderedRef, mountedRef prevent any
+ re-execution
+- Removed ALL React.memo: No more memoization complexity
+- Removed useCallback: No more callback dependencies
 
 ### v0.3.1
 

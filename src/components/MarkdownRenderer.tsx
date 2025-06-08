@@ -3,14 +3,14 @@ import ReactMarkdown from 'react-markdown';
 import rehypePrism from 'rehype-prism-plus';
 import mermaid from 'mermaid';
 import { cn } from '@/lib/utils';
-import { useState, useEffect, useRef } from 'react';
-import { Copy, Check, AlertTriangle, Download } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Copy, Check, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 declare global {
   interface Window {
     mermaidInitialized?: boolean;
+    mermaidCache?: Map<string, string>;
   }
 }
 
@@ -53,26 +53,47 @@ if (typeof mermaid !== 'undefined' && !window.mermaidInitialized) {
     maxEdges: 500
   });
   window.mermaidInitialized = true;
+  window.mermaidCache = new Map();
 }
 
-// SIMPLE Mermaid renderer - ONE useEffect, render once, done
-const SafeMermaidRenderer = ({ code, diagramId }: { code: string; diagramId: string }) => {
+// NUCLEAR OPTION: Render once, cache forever, NEVER re-render
+const ImmutableMermaidRenderer = ({ code }: { code: string }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isCopied, setIsCopied] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [svgContent, setSvgContent] = useState<string>('');
-  const hasRendered = useRef(false);
+  const hasRenderedRef = useRef(false);
+  const mountedRef = useRef(false);
+  
+  // Create a stable hash of the code
+  const codeHash = useMemo(() => {
+    let hash = 0;
+    for (let i = 0; i < code.length; i++) {
+      const char = code.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(36);
+  }, [code]);
 
-  // SINGLE useEffect - render once and never again
+  // Render ONCE on mount, cache result, never render again
   useEffect(() => {
-    if (hasRendered.current) return;
-    hasRendered.current = true;
+    if (hasRenderedRef.current || !containerRef.current || mountedRef.current) {
+      return;
+    }
 
-    const renderMermaid = async () => {
+    mountedRef.current = true;
+    const container = containerRef.current;
+    
+    const renderOnce = async () => {
       try {
+        // Check cache first
+        if (window.mermaidCache?.has(codeHash)) {
+          container.innerHTML = window.mermaidCache.get(codeHash)!;
+          hasRenderedRef.current = true;
+          return;
+        }
+
         if (!code?.trim()) {
-          setError('Empty diagram code');
-          setIsLoading(false);
+          container.innerHTML = '<div class="text-red-500 text-center py-4">Empty diagram code</div>';
           return;
         }
 
@@ -92,33 +113,40 @@ const SafeMermaidRenderer = ({ code, diagramId }: { code: string; diagramId: str
         const validStarts = ['flowchart', 'graph', 'sequencediagram', 'classdiagram', 'statediagram', 'erdiagram', 'journey', 'gantt', 'pie'];
         
         if (!validStarts.some(start => firstLine.startsWith(start))) {
-          setError(`Invalid diagram type`);
-          setIsLoading(false);
+          container.innerHTML = '<div class="text-red-500 text-center py-4">Invalid diagram type</div>';
           return;
         }
 
-        // Render
+        // Render with unique ID
+        const uniqueId = `mermaid-${codeHash}-${Date.now()}`;
         await mermaid.parse(cleanCode);
-        const result = await mermaid.render(diagramId, cleanCode);
+        const result = await mermaid.render(uniqueId, cleanCode);
         
         if (result?.svg) {
           const responsiveSvg = result.svg.replace(
             /<svg([^>]*)>/,
             '<svg$1 width="100%" style="max-width: 100%; height: auto; display: block;">'
           );
-          setSvgContent(responsiveSvg);
+          
+          const finalHtml = `<div class="w-full flex justify-center" style="pointer-events: none; user-select: none;">${responsiveSvg}</div>`;
+          
+          // Cache the result
+          window.mermaidCache?.set(codeHash, finalHtml);
+          
+          // Set innerHTML ONCE
+          container.innerHTML = finalHtml;
+          hasRenderedRef.current = true;
         } else {
-          setError('Failed to generate diagram');
+          container.innerHTML = '<div class="text-red-500 text-center py-4">Failed to generate diagram</div>';
         }
       } catch (err: any) {
-        setError(err?.message || 'Render failed');
-      } finally {
-        setIsLoading(false);
+        console.error('Mermaid render error:', err);
+        container.innerHTML = `<div class="text-red-500 text-center py-4">${err?.message || 'Render failed'}</div>`;
       }
     };
 
-    renderMermaid();
-  }, []); // Empty deps - run once only
+    renderOnce();
+  }, []); // NO DEPENDENCIES - render once only
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -127,16 +155,19 @@ const SafeMermaidRenderer = ({ code, diagramId }: { code: string; diagramId: str
   };
 
   const handleDownload = () => {
-    if (!svgContent) return;
-    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `diagram-${diagramId}.svg`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const svgElement = containerRef.current?.querySelector('svg');
+    if (svgElement) {
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const blob = new Blob([svgData], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `diagram-${codeHash}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
   return (
@@ -147,23 +178,16 @@ const SafeMermaidRenderer = ({ code, diagramId }: { code: string; diagramId: str
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleCopy}>
             {isCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           </Button>
-          {svgContent && (
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleDownload}>
-              <Download className="h-3.5 w-3.5" />
-            </Button>
-          )}
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleDownload}>
+            <Download className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
       
       <div className="p-4">
-        {isLoading && <div className="text-center py-4">Loading...</div>}
-        {error && <div className="text-red-500 text-center py-4">{error}</div>}
-        {svgContent && (
-          <div 
-            dangerouslySetInnerHTML={{ __html: svgContent }}
-            className="w-full flex justify-center"
-          />
-        )}
+        <div ref={containerRef} className="min-h-[50px]">
+          <div className="text-center py-4 text-muted-foreground">Loading diagram...</div>
+        </div>
       </div>
     </div>
   );
@@ -206,9 +230,13 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const isMermaid = className?.includes('language-mermaid');
             
             if (isMermaid && !inline) {
-              const diagramId = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
               const mermaidCode = extractText(children);
-              return <SafeMermaidRenderer code={mermaidCode} diagramId={diagramId} />;
+              // Use code hash as key - this ensures each unique diagram gets its own component instance
+              const codeHash = mermaidCode.split('').reduce((a, b) => {
+                a = ((a << 5) - a) + b.charCodeAt(0);
+                return a & a;
+              }, 0);
+              return <ImmutableMermaidRenderer key={`mermaid-${Math.abs(codeHash)}`} code={mermaidCode} />;
             }
             
             if (inline) {

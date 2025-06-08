@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useChat } from "@/context/ChatContext";
@@ -48,23 +47,32 @@ export default function ChatPage() {
     };
   }, [isMobile, sidebarOpen]);
 
+  // Handle URL parameter changes (when user clicks sidebar or navigates directly)
   useEffect(() => {
-    if (conversationId) {
-      if (conversationId !== currentConversationId) {
+    if (conversationId && conversationId !== currentConversationId) {
+      const conversationExists = conversations.find(c => c.id === conversationId);
+      if (conversationExists) {
         selectConversation(conversationId);
       }
-    } else {
-      if (!currentConversationId) {
-        createNewConversation();
-      }
     }
-  }, [conversationId, currentConversationId, selectConversation, createNewConversation]);
+  }, [conversationId]);
 
+  // Handle context changes (when new conversation is created)
   useEffect(() => {
-    if (currentConversationId && conversationId && currentConversationId !== conversationId) {
+    if (currentConversationId && (!conversationId || currentConversationId !== conversationId)) {
       navigate(`/chat/${currentConversationId}`, { replace: true });
     }
-  }, [currentConversationId, conversationId, navigate]);
+  }, [currentConversationId]);
+
+  // Handle initial load - only create if we have no conversations and no URL param
+  useEffect(() => {
+    if (!conversationId && !currentConversationId && conversations.length === 0) {
+      const timer = setTimeout(() => {
+        createNewConversation();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [conversations.length]);
 
   // Find the current conversation
   const currentConversation = conversations.find(
@@ -77,7 +85,7 @@ export default function ChatPage() {
       <div className="flex flex-col h-screen">
         <Header />
         <div className="flex flex-col items-center justify-center flex-1">
-          <p className="text-lg mb-4">Loading conversation or creating a new one...</p>
+          <p className="text-lg mb-4">Loading conversation...</p>
         </div>
       </div>
     );
