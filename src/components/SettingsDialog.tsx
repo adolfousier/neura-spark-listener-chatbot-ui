@@ -108,9 +108,9 @@ export function SettingsDialog() {
                     <SelectItem value="gemini-2.5-pro-preview-06-05">Gemini 2.5 Pro</SelectItem>
                     <SelectItem value="openai/o4-mini-2025-04-16">OpenAI o4-mini</SelectItem>                    
                     <SelectItem value="gemini-2.5-flash-preview-05-20">Gemini 2.5 Flash</SelectItem>
+                    <SelectItem value="openrouter/deepseek-r1-0528:free">DeepSeek R1 0528 (SpecDec)</SelectItem>
                     <SelectItem value="meta-llama/llama-4-maverick-17b-128e-instruct">Llama 4 Maverick</SelectItem>
                     <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">LLama 4 Scout</SelectItem>
-                    <SelectItem value="openrouter/deepseek-r1-distill-llama-70b">DeepSeek R1 Distill Llama 70B (SpecDec)</SelectItem>
                     <SelectItem value="openrouter/nvidia/llama-3.1-nemotron-ultra-253b-v1:free">Nvidia Nemotron Ultra 256b</SelectItem>
                     <SelectItem value="compound-beta">Groq Compound Beta Agentic Model</SelectItem>
                   </>

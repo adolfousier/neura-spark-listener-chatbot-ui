@@ -105,7 +105,7 @@ DATABASE_URL="file:./dev.db"  # SQLite database path
 
 # Optional with defaults
 VITE_BACKEND_SERVICE_PROVIDER=groq  # Defaults to 'groq' if not provided
-VITE_DEFAULT_SYSTEM_PROMPT=optional default system prompt 
+DEFAULT_SYSTEM_PROMPT=optional default system prompt 
 VITE_GROQ_API_MODEL=deepseek-r1-distill-llama-70b  # Default model for Groq
 VITE_GOOGLE_API_MODEL=gemini-2.5-pro-exp-03-25  # Default model for Google
 VITE_STREAM_ENABLED=true  # Enable/disable streaming responses
@@ -192,6 +192,11 @@ npm run format
 ```
 
 ## Change Log
+
+### v0.3.6 
+
+- Implemented a DEFAULT_WELCOME_MESSAGE flag
+- Improved the chatbubble adding settings, theme and web search dropdown
 
 ### v0.3.5 
 

@@ -42,7 +42,7 @@ export function getDefaultSettings(): Settings {
     reasoningFormat: import.meta.env.VITE_REASONING_FORMAT || 'parsed',
     template: 'minimal',
     darkMode: false,
-    systemPrompt: import.meta.env.VITE_DEFAULT_SYSTEM_PROMPT || '',
+    systemPrompt: import.meta.env.DEFAULT_SYSTEM_PROMPT || '',
     contextWindowSize: 5,
     webSearchEnabled: false, // Web search disabled by default
     audioResponseEnabled: false, // Audio responses disabled by default
@@ -54,8 +54,16 @@ export function truncate(str: string, length: number): string {
   return str.slice(0, length) + '...';
 }
 
+/**
+ * Gets the default welcome message from environment variables
+ * Supports full markdown formatting
+ */
 export function getFirstMessage(message?: string): string {
-  return message || "Hello! I'm your AI assistant. How can I help you today?";
+  // If a specific message is provided, use it
+  if (message) return message;
+  
+  // Otherwise, get from environment variable or use fallback
+  return import.meta.env.DEFAULT_WELCOME_MESSAGE || "Hello! I'm your AI assistant. How can I help you today?";
 }
 
 export function getApiUrlForProvider(provider: Provider): string {

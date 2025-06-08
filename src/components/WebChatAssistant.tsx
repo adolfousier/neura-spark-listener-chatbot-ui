@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Settings, Globe, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useChat } from '@/context/ChatContext';
 import { MessageList } from '@/components/MessageList';
 import { MessageInput } from '@/components/MessageInput';
-import { Header } from '@/components/Header'; // Added Header import
+import { Logo } from './Logo';
+import { ModeToggle } from './ModeToggle';
+import { SettingsDialog } from './SettingsDialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const BOXED_CHAT_UI = import.meta.env.VITE_BOXED_CHAT_UI === 'true';
 
@@ -16,16 +19,17 @@ const WebChatAssistant: React.FC = () => {
     conversations, 
     currentConversationId, 
     createNewConversation, 
-    selectConversation 
+    selectConversation,
+    settings,
+    toggleWebSearch,
+    toggleAudioResponse
   } = useChat();
 
   useEffect(() => {
     setIsMounted(true);
-    // Ensure a conversation is selected or created
     if (BOXED_CHAT_UI && !currentConversationId && conversations.length === 0) {
       createNewConversation();
     } else if (BOXED_CHAT_UI && !currentConversationId && conversations.length > 0) {
-      // If no current ID but conversations exist, select the first one for the boxed UI
       selectConversation(conversations[0].id);
     }
   }, [BOXED_CHAT_UI, currentConversationId, conversations, createNewConversation, selectConversation]);
@@ -42,7 +46,6 @@ const WebChatAssistant: React.FC = () => {
 
   return (
     <>
-      {/* Chat Bubble Button */}
       {!isOpen && (
         <Button
           onClick={toggleChat}
@@ -53,28 +56,65 @@ const WebChatAssistant: React.FC = () => {
         </Button>
       )}
 
-      {/* Chat Window */}
       {isOpen && (
         <div className={cn(
           "fixed bottom-24 right-6 z-40 w-[500px] h-[750px] bg-background border border-border rounded-lg shadow-xl flex flex-col overflow-hidden transition-all duration-300 ease-in-out",
           isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
         )}>
-          {/* Use the existing Header component, but we need a way to pass the close button or handle it differently */}
-          {/* For now, let's use a simplified header within WebChatAssistant and keep the original Header for the main app. */}
-          {/* OR, we can adapt the main Header to be more flexible. */}
-          {/* Let's try a simplified inline header first for the boxed chat */}
-          <div className="flex items-center justify-between p-3 border-b bg-background">
-            {/* Minimalist Header for boxed view - can be expanded or use a prop-based Header component later */}
+          <header className="flex items-center justify-between p-3 border-b bg-background">
             <div className="flex items-center space-x-2">
-              <img src="/title-avatar.png" alt="Neura Spark" className="w-8 h-8" />
+              <Logo />
               <h3 className="text-lg font-semibold">Neura Chat</h3>
             </div>
-            <Button variant="ghost" size="icon" onClick={toggleChat} aria-label="Close chat">
-              <X size={20} />
-            </Button>
-          </div>
+            <div className="flex items-center space-x-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleWebSearch}
+                      aria-label="Toggle web search"
+                      className={cn("h-8 w-8", settings.webSearchEnabled ? "text-primary" : "text-muted-foreground hover:text-foreground")}
+                    >
+                      <Globe className={cn("h-4 w-4", settings.webSearchEnabled ? "animate-pulse-icon" : "")} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>{settings.webSearchEnabled ? "Disable web search" : "Enable web search"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleAudioResponse}
+                      aria-label="Toggle audio responses"
+                      className={cn("h-8 w-8", settings.audioResponseEnabled ? "text-primary" : "text-muted-foreground hover:text-foreground")}
+                    >
+                      {settings.audioResponseEnabled ? (
+                        <Volume2 className={cn("h-4 w-4", "animate-pulse-icon")} />
+                      ) : (
+                        <VolumeX className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>{settings.audioResponseEnabled ? "Disable automatic audio playback" : "Enable automatic audio playback"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <ModeToggle />
+              <SettingsDialog /> 
+              <Button variant="ghost" size="icon" onClick={toggleChat} aria-label="Close chat" className="h-8 w-8">
+                <X size={20} />
+              </Button>
+            </div>
+          </header>
 
-          {/* Chat Content - This will likely need a more refined version of ChatPage or its components */}
           <div className="flex-1 overflow-y-auto">
             {currentConversation ? (
               <MessageList conversation={currentConversation} />
@@ -85,22 +125,22 @@ const WebChatAssistant: React.FC = () => {
             )}
           </div>
           {currentConversation && <MessageInput />}
-          {/* Footer for the chat window */}
-          <footer className="py-2 px-4 text-center text-xs text-muted-foreground border-t bg-background">
-            <a 
-              href="https://meetneura.ai" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-              Powered by Neura AI
-            </a>
+          <footer className="py-3 px-4 text-center text-xs text-muted-foreground border-t bg-background">
+            <div>
+              <a 
+                href="https://meetneura.ai" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-primary transition-colors"
+              >
+                Powered by Neura AI
+              </a>
+            </div>
           </footer>
         </div>
       )}
     </>
   );
 };
-
 
 export default WebChatAssistant;

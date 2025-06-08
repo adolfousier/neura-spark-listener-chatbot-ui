@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    image: neura-open-source-ui:v0.3.5
+    image: neura-open-source-ui:v0.3.6
     container_name: ${CONTAINER_NAME}
     ports:
       - "${VITE_PORT}:4173"
@@ -12,7 +12,9 @@ services:
     environment:
       # UI Chatbot Settings
       - BOXED_CHAT_UI=${BOXED_CHAT_UI}
-
+      - DEFAULT_SYSTEM_PROMPT=${DEFAULT_SYSTEM_PROMPT}
+      - DEFAULT_WELCOME_MESSAGE=${DEFAULT_WELCOME_MESSAGE}
+      
       # Optional backend with defaults (Neura/Groq/OpenRouter/Flowise/Openai/Claude)
       - VITE_BACKEND_SERVICE_PROVIDER=${VITE_BACKEND_SERVICE_PROVIDER}
 
@@ -39,7 +41,7 @@ services:
       - VITE_OPENROUTER_API_URL=${VITE_OPENROUTER_API_URL}
       - VITE_OPENROUTER_HTTP_REFERER=${VITE_OPENROUTER_HTTP_REFERER}
       - VITE_OPENROUTER_X_TITLE=${VITE_OPENROUTER_X_TITLE}
-
+      
       # Openai service settings
       - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
 

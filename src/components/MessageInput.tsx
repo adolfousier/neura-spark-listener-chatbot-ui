@@ -235,14 +235,10 @@ export function MessageInput() {
         )}
       </div>
       
-      <div className="flex justify-between items-center mt-2">
-        <div className="text-xs text-muted-foreground">
-          {message.length > 0 ? `${message.length} characters` : ''}
-        </div>
-        <div className="text-xs text-muted-foreground opacity-75 text-center flex-grow mx-auto">
+      <div className="flex justify-center items-center mt-2">
+        <div className="text-xs text-muted-foreground opacity-75">
           AI powered by {settings.provider.charAt(0).toUpperCase() + settings.provider.slice(1)} • Model: {settings.model}
         </div>
-        <div className="text-xs text-muted-foreground w-20"></div>
       </div>
     </form>
   );
