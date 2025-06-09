@@ -1,23 +1,30 @@
-export type Provider = 'groq' | 'claude' | 'openai' | 'flowise' | 'openrouter' | 'neurarouter' | '' | 'google';
+export type Provider = 'groq' | 'openai' | 'flowise' | 'openrouter' | 'neurarouter' | 'anthropic' | 'google';
 
 export type Template = 'minimal' | 'vibrant' | 'elegant';
 
 export type Message = {
   id: string;
   role: 'user' | 'assistant' | 'system';
-  content: string;
+  content?: string;
   createdAt: Date;
   updatedAt?: Date;
-  tokenCount?: number; // Optional token count field
-  audioUrl?: string;   // Optional URL to the audio version of the message
+  tokenCount?: number;
+  audioUrl?: string;
+  model?: string;
+  modelA?: string;
+  modelB?: string;
+  providerA?: Provider;
+  providerB?: Provider;
 };
 
 export type Conversation = {
   id: string;
   title: string;
+  isArena: boolean;
   messages: Message[];
   createdAt: Date;
   updatedAt: Date;
+  settings?: Settings; // Optional settings for the conversation
 };
 
 export type Settings = {
@@ -39,6 +46,8 @@ export type Settings = {
   providerB?: Provider;
   modelB?: string;
   temperatureB?: number;
+  arenaMode?: boolean;
+  arenaModelLabel?: string;
 };
 
 export type ChatRequest = {
@@ -46,6 +55,7 @@ export type ChatRequest = {
   model: string;
   temperature: number;
   stream: boolean;
+  web_search_enabled?: boolean;
 };
 
 export type ChatResponse = {

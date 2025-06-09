@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ChatProvider } from "@/context/ChatContext";
+import { ArenaProvider } from "@/context/ArenaContext";
 import Index from "./pages/Index";
 import ChatPage from "./pages/ChatPage";
 import TemplatesPage from "./pages/TemplatesPage";
@@ -57,13 +58,15 @@ const App = () => {
     return (
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <ChatProvider>
-            <ThemeInitializer />
-            <Toaster />
-            <Sonner />
-            {/* Boxed UI doesn't need BrowserRouter or Routes, just the assistant */}
-            <WebChatAssistant />
-          </ChatProvider>
+          <ArenaProvider>
+            <ChatProvider>
+              <ThemeInitializer />
+              <Toaster />
+              <Sonner />
+              {/* Boxed UI doesn't need BrowserRouter or Routes, just the assistant */}
+              <WebChatAssistant />
+            </ChatProvider>
+          </ArenaProvider>
         </TooltipProvider>
       </QueryClientProvider>
     );
@@ -73,19 +76,21 @@ const App = () => {
   return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <ChatProvider>
-        <ThemeInitializer />
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/chat/:conversationId?" element={<ChatPage />} />
-            <Route path="/templates" element={<TemplatesPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </ChatProvider>
+      <ArenaProvider>
+        <ChatProvider>
+          <ThemeInitializer />
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/chat/:conversationId?" element={<ChatPage />} />
+              <Route path="/templates" element={<TemplatesPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </ChatProvider>
+      </ArenaProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

@@ -13,6 +13,7 @@ datasource db {
 model Conversation {
   id        String    @id @default(uuid())
   title     String
+  isArena   Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   messages  Message[]
@@ -21,7 +22,11 @@ model Conversation {
 model Message {
   id             String       @id @default(uuid())
   role           String       // 'user', 'assistant', or 'system'
-  content        String
+  content        String?
+  modelA         String?
+  modelB         String?
+  providerA      String?
+  providerB      String?
   createdAt      DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String

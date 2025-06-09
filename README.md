@@ -9,11 +9,13 @@
 
 [![Neura OS Chatbot UI](https://img.shields.io/badge/Neura%20OS%20Chatbot%20UI-7f56da)](https://open-source-chatbot-ui.meetneura.ai)[![Powered by Neura AI](https://img.shields.io/badge/Powered%20by-Neura%20AI-7f56da)](https://meetneura.ai)
 
-# Neura AI Open Source Chatbot UI - A complete multi-service AI chat interface for everyone 🤝
+# Neura Spark Listener | Open-Source Chabot UI: A complete multi-service AI chat interface for everyone 🤝
 
 ## Overview
 
-Neura Spark Listener is a modern, customizable open-source AI chatbot interface that supports persistent conversations with persistent database, web research, multiple LLM services, and visual templates. It's built with Vite, React, TypeScript, shadcn UI and more modern web technologies to provide an exceptional user experience.
+Neura Spark Listener is a modern, customizable open-source AI chatbot interface. It's built with Vite, React, TypeScript, shadcn UI, prisma DB, and more modern web technologies to provide an exceptional user experience.
+
+Check comprehensive feature list below. 
 
 ## Features
 
@@ -46,6 +48,7 @@ Embed Feature: Easily embed the chatbot on any webpage with a simple script tag.
 - Personalized Welcome Message: Allows defining a personalized welcome message to greet users upon entering the chat.
 
 ## Comming Soon
+
 - Chat Arena: Comparison side by side between two different models
 - User Account Management: Allow users to store and manage own conversations logging into their account
 - Follow-up Prompts: Suggest follow-up questions to enhance user engagement.
@@ -60,13 +63,21 @@ Attachment Preview: Shows thumbnails for uploaded images and file information fo
 ## App Preview
 
 ### Home Page
+
 ![Home Page View](./public/og.png)
 
 ### Desktop Chat View
+
 ![Desktop Chat View](./public/og-image.png)
 
 ### Chat Bubble Boxed View
+
 ![Chat Bubble View](./public/neura-spark-chatbubble-preview.png)![Chat Bubble View](./public/neura-spark-bubble-preview.png)
+
+### Chat Arena View
+
+![Chat Arena View](./public/neura-spark-chat-arena-preview.png)
+
 
 ## Getting Started
 
@@ -283,6 +294,18 @@ npm run format
 ```
 
 ## Change Log
+
+### v0.3.9 
+
+-  Improved settings modal for when arena is selected and enabled in the .env flag
+
+### v0.3.8 
+
+- **Enter Chat Arena**: Fully implementation ready. In the next commit, final optimization to settings modal for when arena is set to true in the .env and selected in the UI
+
+### v0.3.7
+
+- Readme, compose and .env.example update
 
 ### v0.3.6 
 

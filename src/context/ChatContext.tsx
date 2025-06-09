@@ -6,6 +6,8 @@ import { sendChatRequest } from "@/services/apiService";
 import { streamChatResponse } from "@/lib/utils";
 import { convertTextToSpeech, playAudio, convertAndUploadTextToSpeech } from "@/services/audioService";
 import { countTokens } from '@/lib/tokenizer';
+import * as dbService from '@/services/dbService';
+import { useArena } from './ArenaContext';
 
 
 type ChatContextType = {
@@ -18,51 +20,54 @@ type ChatContextType = {
   streamController: AbortController | null;
   setSettings: (settings: Settings) => void;
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
-  createNewConversation: (initialMessage?: string) => string;
+  createNewConversation: (initialMessage?: string, isArena?: boolean) => Promise<string>;
   selectConversation: (id: string) => void;
-  addMessage: (role: 'user' | 'assistant' | 'system', content: string) => void;
-  deleteConversation: (id: string) => void;
+  addMessage: (message: Partial<Message>) => Promise<void>;
+  deleteConversation: (id: string) => Promise<void>;
   renameConversation: (id: string, newTitle: string) => void;
-  clearConversations: () => void;
+  clearConversations: () => Promise<void>;
   updateTheme: (template: Template, darkMode: boolean) => void;
   startStreaming: () => AbortController;
   stopStreaming: () => void;
   sendMessage: (content: string, contextMessages?: Message[], editedMessageIndex?: number, returnResponse?: boolean) => Promise<{ content: string } | void>;
   toggleWebSearch: () => void;
   toggleAudioResponse: () => void;
+  toggleArenaMode: () => void;
   setIsInputDisabled: (disabled: boolean) => void;
 };
 
 const ChatContext = createContext<ChatContextType>({
   conversations: [],
   currentConversationId: null,
-  settings: { ...getDefaultSettings(), ...getDefaultArenaSettings() },
+  settings: { ...getDefaultSettings(), ...getDefaultArenaSettings(), arenaMode: false },
   isLoading: false,
   isStreaming: false,
   isInputDisabled: false,
   streamController: null,
   setSettings: () => {},
   setConversations: () => {},
-  createNewConversation: () => '',
+  createNewConversation: async () => '',
   selectConversation: () => {},
-  addMessage: () => {},
-  deleteConversation: () => {},
+  addMessage: async () => {},
+  deleteConversation: async () => {},
   renameConversation: () => {},
-  clearConversations: () => {},
+  clearConversations: async () => {},
   updateTheme: () => {},
   startStreaming: () => new AbortController(),
   stopStreaming: () => {},
   sendMessage: async () => {},
   toggleWebSearch: () => {},
   toggleAudioResponse: () => {},
+  toggleArenaMode: () => {},
   setIsInputDisabled: () => {},
 });
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
+  const { sendArenaMessage, arenaSettings, setArenaSettings, currentArenaConversationId, setCurrentArenaConversationId, setArenaConversations } = useArena();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [settings, setSettings] = useState<Settings>({ ...getDefaultSettings(), ...getDefaultArenaSettings() });
+  const [settings, setSettings] = useState<Settings>({ ...getDefaultSettings(), ...getDefaultArenaSettings(), arenaMode: false });
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isInputDisabled, setIsInputDisabled] = useState(false);
@@ -73,30 +78,33 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     const savedConversations = localStorage.getItem('conversations');
     const savedSettings = localStorage.getItem('settings');
     
-    if (savedConversations) {
-      try {
-        const parsed = JSON.parse(savedConversations);
-        const formattedConversations = parsed.map((conv: any) => ({
-          ...conv,
-          createdAt: new Date(conv.createdAt),
-          updatedAt: new Date(conv.updatedAt),
-          messages: conv.messages.map((msg: any) => ({
-            ...msg,
-            createdAt: new Date(msg.createdAt)
-          }))
-        }));
-        setConversations(formattedConversations);
-        
-        if (formattedConversations.length > 0) {
-          setCurrentConversationId(formattedConversations[0].id);
+    const loadConversations = async () => {
+      if (savedConversations) {
+        try {
+          const parsed = JSON.parse(savedConversations);
+          const formattedConversations = parsed.map((conv: any) => ({
+            ...conv,
+            createdAt: new Date(conv.createdAt),
+            updatedAt: new Date(conv.updatedAt),
+            messages: conv.messages.map((msg: any) => ({
+              ...msg,
+              createdAt: new Date(msg.createdAt)
+            }))
+          }));
+          setConversations(formattedConversations);
+          
+          if (formattedConversations.length > 0) {
+            setCurrentConversationId(formattedConversations[0].id);
+          }
+        } catch (error) {
+          console.error('Error parsing saved conversations:', error);
+          await createNewConversation(undefined, false);
         }
-      } catch (error) {
-        console.error('Error parsing saved conversations:', error);
-        createNewConversation();
+      } else {
+        await createNewConversation(undefined, false);
       }
-    } else {
-      createNewConversation();
-    }
+    };
+    loadConversations();
     
     if (savedSettings) {
       try {
@@ -127,60 +135,55 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem('settings', JSON.stringify(settings));
   }, [settings]);
 
-  const createNewConversation = useCallback((initialMessage?: string) => {
-    const id = generateId();
-    const now = new Date();
+  const createNewConversation = useCallback(async (initialMessage?: string, isArena: boolean = false) => {
     const firstMessage = {
       id: generateId(),
       role: 'assistant' as const,
       content: getFirstMessage(initialMessage),
-      createdAt: now
+      createdAt: new Date()
     };
     
-    const newConversation: Conversation = {
-      id,
-      title: 'New Conversation',
-      messages: [firstMessage],
-      createdAt: now,
-      updatedAt: now
-    };
+    const newConversation = await dbService.createConversation(
+      'New Conversation',
+      isArena,
+      firstMessage
+    );
     
     setConversations(prev => [newConversation, ...prev]);
-    setCurrentConversationId(id);
-    return id;
+    setCurrentConversationId(newConversation.id);
+    return newConversation.id;
   }, []);
 
   const selectConversation = useCallback((id: string) => {
     setCurrentConversationId(id);
   }, []);
 
-  const addMessage = useCallback((role: 'user' | 'assistant' | 'system', content: string) => {
+  const addMessage = useCallback(async (message: Partial<Message>) => {
     if (!currentConversationId) return;
-    
-    // Calculate token count directly when creating the message
-    // Simple word-based tokenization
-    const words = content
-      .trim()
-      .split(/\s+|[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/) 
-      .filter(word => word.length > 0);
-    
-    const message: Message = {
+
+    const fullMessage: Message = {
       id: generateId(),
-      role,
-      content,
+      role: message.role as 'user' | 'assistant' | 'system',
+      content: message.content || '',
       createdAt: new Date(),
-      tokenCount: words.length
+      tokenCount: message.content ? countTokens(message.content) : 0,
+      modelA: message.modelA,
+      modelB: message.modelB,
+      providerA: message.providerA,
+      providerB: message.providerB,
     };
+
+    const savedMessage = await dbService.addMessage(currentConversationId, fullMessage);
     
     setConversations(prev => 
       prev.map(conv => 
         conv.id === currentConversationId 
           ? {
               ...conv,
-              messages: [...conv.messages, message],
+              messages: [...conv.messages, savedMessage],
               updatedAt: new Date(),
-              title: conv.title === 'New Conversation' && role === 'user' 
-                ? content.slice(0, 30) + (content.length > 30 ? '...' : '') 
+              title: conv.title === 'New Conversation' && savedMessage.role === 'user' 
+                ? savedMessage.content?.slice(0, 30) + (savedMessage.content && savedMessage.content.length > 30 ? '...' : '') 
                 : conv.title
             } 
           : conv
@@ -188,7 +191,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     );
   }, [currentConversationId]);
 
-  const deleteConversation = useCallback((id: string) => {
+  const deleteConversation = useCallback(async (id: string) => {
+    await dbService.deleteConversation(id);
     setConversations(prev => prev.filter(conv => conv.id !== id));
     
     if (currentConversationId === id) {
@@ -197,10 +201,10 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         if (nextConv) {
           setCurrentConversationId(nextConv.id);
         } else {
-          createNewConversation();
+          await createNewConversation(undefined, false);
         }
       } else {
-        createNewConversation();
+        await createNewConversation(undefined, false);
       }
     }
     
@@ -210,9 +214,10 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, [conversations, currentConversationId, createNewConversation, toast]);
   
-  const clearConversations = useCallback(() => {
+  const clearConversations = useCallback(async () => {
+    await dbService.deleteAllConversations();
     setConversations([]);
-    createNewConversation();
+    await createNewConversation(undefined, false);
     
     toast({
       title: "All conversations cleared",
@@ -297,13 +302,56 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     returnResponse?: boolean
   ): Promise<{ content: string } | void> => {
     if (!currentConversationId) {
-      const id = createNewConversation();
+      const id = await createNewConversation(undefined, settings.arenaMode);
       setCurrentConversationId(id);
     }
     
     setIsLoading(true);
-    
+
     try {
+      if (settings.arenaMode) {
+        let conversationIdToUse = currentArenaConversationId;
+        // Ensure currentArenaConversationId is set, if not, create or select one
+        if (!conversationIdToUse) {
+          const newArenaConvId = generateId();
+          const newArenaConversation: Conversation = {
+            id: newArenaConvId,
+            title: `Arena Battle ${new Date().toLocaleString()}`,
+            isArena: true,
+            messages: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            // settings: settings // Use current chat settings as a base for arena - removing to fix TS error, settings are per model in arena
+          };
+          setArenaConversations(prev => [...prev, newArenaConversation]);
+          setCurrentArenaConversationId(newArenaConvId);
+          conversationIdToUse = newArenaConvId;
+        }
+
+        // Ensure arenaSettings are populated, using defaults from ChatContext's settings if necessary
+        let currentArenaModelSettings = arenaSettings;
+        if (!currentArenaModelSettings || currentArenaModelSettings.length < 2) {
+          const defaultArenaModelA: Settings = { 
+            ...(settings as Settings), // Base settings from ChatContext
+            model: settings.modelA || 'gemini-1.0-pro', // Fallback if modelA is not in settings
+            provider: settings.providerA || 'google', // Fallback if providerA is not in settings
+            arenaModelLabel: 'Model A' 
+          };
+          const defaultArenaModelB: Settings = { 
+            ...(settings as Settings), // Base settings from ChatContext
+            model: settings.modelB || 'claude-2', // Fallback if modelB is not in settings
+            provider: settings.providerB || 'anthropic', // Fallback if providerB is not in settings
+            arenaModelLabel: 'Model B' 
+          };
+          currentArenaModelSettings = [defaultArenaModelA, defaultArenaModelB];
+          setArenaSettings(currentArenaModelSettings);
+        }
+        
+        await sendArenaMessage(content, conversationIdToUse, currentArenaModelSettings);
+        setIsLoading(false);
+        return; // Exit early if in arena mode
+      }
+
       // If editing, update the state immediately to reflect the edit and remove subsequent messages
       if (editedMessageIndex !== undefined) {
         setConversations(prev =>
@@ -331,7 +379,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         );
       } else {
          // If not editing, add the new user message normally
-         addMessage("user", content);
+         await addMessage({ role: "user", content });
       }
       
       // Prepare messages array with system prompt if available
@@ -376,9 +424,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       // Create the chat request
       const chatRequest = {
         messages,
-        model: settings.webSearchEnabled ? 
+        model: settings.arenaMode ? settings.modelA : (settings.webSearchEnabled ? 
           (import.meta.env.VITE_GOOGLE_API_MODEL || 'gemini-2.5-pro-exp-03-25') : 
-          settings.model,
+          settings.model),
         temperature: settings.temperature,
         stream: settings.streamEnabled
       };
@@ -654,6 +702,19 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   }, [settings, toast]);
 
   // Function to toggle audio responses
+  const toggleArenaMode = useCallback(() => {
+    setSettings(prev => ({
+      ...prev,
+      arenaMode: !prev.arenaMode
+    }));
+    toast({
+      title: settings.arenaMode ? "Arena Mode Disabled" : "Arena Mode Enabled",
+      description: settings.arenaMode ? 
+        "Switching to standard chat mode." :
+        "Switching to Arena Mode. Messages will be sent to two models.",
+    });
+  }, [settings, toast]);
+
   const toggleAudioResponse = useCallback(() => {
     setSettings(prev => ({
       ...prev,
@@ -690,6 +751,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     sendMessage,
     toggleWebSearch,
     toggleAudioResponse,
+    toggleArenaMode,
     setIsInputDisabled,
   }), [
     conversations, 

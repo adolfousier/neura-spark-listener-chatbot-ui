@@ -1,7 +1,7 @@
 {
   "name": "neura-chatbot-ui",
   "private": true,
-  "version": "0.3.8",
+  "version": "0.3.9",
   "type": "module",
   "author": "Adolfo Usier <adolfo@meetneura.ai>",
 
