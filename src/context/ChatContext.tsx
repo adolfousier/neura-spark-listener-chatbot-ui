@@ -6,7 +6,7 @@ import { sendChatRequest } from "@/services/apiService";
 import { streamChatResponse } from "@/lib/utils";
 import { convertTextToSpeech, playAudio, convertAndUploadTextToSpeech } from "@/services/audioService";
 import { countTokens } from '@/lib/tokenizer';
-import * as dbService from '@/services/dbService';
+import * as dbService from '@/services/api/database';
 import { useArena } from './ArenaContext';
 
 

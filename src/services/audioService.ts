@@ -1,12 +1,10 @@
-import { textToSpeech } from './api/tts/openai/tts';
-import { speechToText } from './api/stt/groq';
 import { uploadAudioToAzure } from './api/storage/azure';
 import {
-  getOpenAITTSApiKey,
   getOpenAITTSModel,
   getOpenAITTSVoice,
-  getGroqSTTApiKey,
-  getGroqSTTModel
+  getGroqSTTModel,
+  getTTSApiUrl,
+  getSTTApiUrl
 } from '@/lib/utils';
 
 /**
@@ -14,23 +12,37 @@ import {
  */
 
 /**
- * Convert text to speech using OpenAI's TTS API
+ * Convert text to speech using secure server endpoint
  * @param text Text to convert to speech
  * @returns Promise with audio data
  */
 export async function convertTextToSpeech(text: string): Promise<ArrayBuffer> {
-  console.log('[Audio Service] Converting text to speech');
+  console.log('[Audio Service] SECURE MODE - Converting text to speech');
   
-  const apiKey = getOpenAITTSApiKey();
+  const apiUrl = getTTSApiUrl();
   const model = getOpenAITTSModel();
-  const voice = getOpenAITTSVoice() as any; // Cast to any to avoid type errors
-  
-  if (!apiKey) {
-    throw new Error('OpenAI API key is not set. Please check your environment variables.');
-  }
+  const voice = getOpenAITTSVoice();
   
   try {
-    const audioData = await textToSpeech(text, apiKey, model, voice);
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        model,
+        voice
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`TTS API request failed: ${response.status} - ${errorText}`);
+    }
+
+    const audioData = await response.arrayBuffer();
+    console.log('[Audio Service] Successfully converted text to speech');
     return audioData;
   } catch (error) {
     console.error('[Audio Service] Failed to convert text to speech:', error);
@@ -44,15 +56,32 @@ export async function convertTextToSpeech(text: string): Promise<ArrayBuffer> {
  * @returns Promise with transcribed text
  */
 export async function convertSpeechToText(audioFile: File): Promise<string> {
-  console.log('[Audio Debug] Starting speech-to-text conversion', {
+  console.log('[Audio Debug] SECURE MODE - Starting speech-to-text conversion', {
     fileSize: audioFile.size,
     fileType: audioFile.type,
     fileName: audioFile.name
   });
   
+  const apiUrl = getSTTApiUrl();
+  
   try {
-    // Server-side endpoint call 
-    const text = await speechToText(audioFile);
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('audio', audioFile);
+    formData.append('model', getGroqSTTModel());
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`STT API request failed: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    const text = result.text || '';
     
     console.log(`[Audio Debug] Successfully converted speech to text:`, {
       textLength: text.length,

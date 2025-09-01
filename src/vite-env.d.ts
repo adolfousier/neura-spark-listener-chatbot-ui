@@ -1,29 +1,23 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_OPENAI_API_KEY: string;
-  readonly VITE_OPENAI_API_URL: string;
-  readonly VITE_CLAUDE_API_KEY: string;
-  readonly VITE_CLAUDE_API_URL: string;
-  readonly VITE_GROQ_API_KEY: string;
-  readonly VITE_GROQ_API_URL: string;
-  readonly VITE_FLOWISE_API_KEY: string;
-  readonly VITE_FLOWISE_API_URL: string;
-  readonly VITE_OPENROUTER_API_KEY: string;
-  readonly VITE_OPENROUTER_API_URL: string;
-  readonly VITE_NEURA_API_KEY: string;
-  readonly VITE_NEURA_API_URL: string;
-  readonly VITE_GOOGLE_API_KEY: string;
-  readonly VITE_GOOGLE_API_URL: string;
+  // SECURITY FIX: Only client-safe environment variables should be exposed
+  // All API keys are now server-side only and removed from here
+  
+  // Client-side configuration (safe to expose)
+  readonly VITE_API_BASE_URL: string;
+  readonly VITE_BACKEND_SERVICE_PROVIDER: string;
+  readonly VITE_GROQ_API_MODEL: string;
   readonly VITE_GOOGLE_API_MODEL: string;
-  readonly VITE_OPENAI_TTS_API_KEY: string;
+  readonly VITE_STREAM_ENABLED: string;
+  readonly VITE_REASONING_FORMAT: string;
+  readonly VITE_BOXED_CHATBUBBLE_MODE_ENABLED: string;
+  readonly VITE_PORT: string;
   readonly VITE_OPENAI_TTS_API_MODEL: string;
   readonly VITE_OPENAI_TTS_API_VOICE: string;
-  readonly VITE_GROQ_STT_API_KEY: string;
   readonly VITE_GROQ_STT_API_MODEL: string;
-  readonly VITE_AZURE_STORAGE_CONTAINER_ID: string;
-  readonly VITE_AZURE_STORAGE_ACCOUNT_NAME: string;
-  readonly VITE_AZURE_STORAGE_SAS_TOKEN: string;
+  readonly DEFAULT_SYSTEM_PROMPT: string;
+  readonly DEFAULT_WELCOME_MESSAGE: string;
 }
 
 interface ImportMeta {

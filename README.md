@@ -117,14 +117,14 @@ cp .env.example .env
 At least one AI service API key is required for the application to function:
 
 ```env
-# At least one of these is required
-VITE_GROQ_API_KEY=your_groq_api_key_here
-VITE_OPENAI_API_KEY=your_openai_api_key_here
-VITE_CLAUDE_API_KEY=your_claude_api_key_here
-VITE_GOOGLE_API_KEY=your_google_api_key_here
-VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
-VITE_NEURA_ROUTER_API_KEY=your_neura_api_key_here
-VITE_FLOWISE_API_KEY=your_flowise_api_key_here
+# 🔒 SECURE: At least one of these is required (SERVER-SIDE ONLY)
+GROQ_API_KEY=your_groq_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+CLAUDE_API_KEY=your_claude_api_key_here
+GOOGLE_API_KEY=your_google_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+NEURA_ROUTER_API_KEY=your_neura_api_key_here
+FLOWISE_API_KEY=your_flowise_api_key_here
 ```
 
 #### Core Configuration
@@ -184,11 +184,11 @@ VITE_FLOWISE_CHATFLOW_ID=your_chatflow_id_here  # Specific chatflow ID
 
 #### Optional Features
 
-**Azure Storage (for file uploads):**
+**Azure Storage (for file uploads - SERVER-SIDE ONLY):**
 ```env
-VITE_AZURE_STORAGE_CONTAINER_ID=your_container_name
-VITE_AZURE_STORAGE_ACCOUNT_NAME=your_storage_account_name
-VITE_AZURE_STORAGE_SAS_TOKEN=your_sas_token_here
+AZURE_STORAGE_CONTAINER_ID=your_container_name
+AZURE_STORAGE_ACCOUNT_NAME=your_storage_account_name
+AZURE_STORAGE_SAS_TOKEN=your_sas_token_here
 ```
 
 **Text-to-Speech Configuration:**
@@ -294,6 +294,29 @@ npm run format
 ```
 
 ## Change Log
+
+### v0.4.0 - Security Overhaul
+
+**🔒 MAJOR SECURITY UPDATE - API Key Protection**
+
+- **Critical Security Fix**: Removed all API key exposure from browser/client-side
+- **Secure Server Architecture**: Implemented Express.js server with secure API endpoints
+- **Database Security**: Moved all Prisma/database operations to server-side only
+- **Environment Security**: Removed VITE_ prefixes from sensitive credentials (API keys, Azure SAS tokens)
+- **Secure API Endpoints**: Created `/api/chat/completions`, `/api/database/conversations`, `/api/tts`, `/api/stt`, `/api/storage/upload`
+- **CORS Protection**: Proper CORS configuration for secure cross-origin requests
+- **Production Ready**: Updated Docker and compose configurations for secure deployment
+- **Database Integration**: Automated Prisma setup with `npm run dev` and production builds
+
+**Breaking Changes:**
+- API keys now require server-side configuration (remove VITE_ prefix)
+- Client applications now connect to secure proxy endpoints instead of direct API calls
+- Updated environment variable structure for enhanced security
+
+**Migration Guide:**
+- Update your `.env` file to use the new secure format (see `.env.example`)
+- API keys are now server-side only - no browser exposure
+- All functionality maintained with improved security
 
 ### v0.3.9 
 

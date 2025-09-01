@@ -1,4 +1,5 @@
-FROM node:18-buster
+# Multi-stage build for secure server setup
+FROM node:18-buster AS builder
 
 WORKDIR /app
 
@@ -22,17 +23,54 @@ RUN npm install firebase@latest
 COPY . .
 
 # Create necessary directories and set permissions
-RUN mkdir -p app/src/data/audio && \
-  chmod -R 777 src/data
+RUN mkdir -p app/src/data/audio uploads && \
+  chmod -R 777 src/data uploads
 
 # First Time - Generate Prisma Client
 RUN npx prisma generate
 
-# Build the application
+# Build both server and client (includes server build now)
 RUN npm run build
 
-# Expose port
-EXPOSE 4173
+# Production stage
+FROM node:18-buster AS production
 
-# Initialize database and start the application
-CMD npx prisma db push && npm run preview
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update -y \
+    && apt-get install -y \
+        ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy built application from builder stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/server.ts ./
+COPY --from=builder /app/tsconfig.server.json ./
+COPY --from=builder /app/prisma ./prisma
+
+# Create necessary directories
+RUN mkdir -p uploads src/data/audio && \
+  chmod -R 777 src/data uploads
+
+# Install tsx for running TypeScript in production
+RUN npm install -g tsx
+
+# Generate Prisma Client in production
+RUN npx prisma generate
+
+# Expose both server and client ports
+EXPOSE 3001
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Initialize database and start the secure server
+CMD npx prisma db push && npm run start:prod

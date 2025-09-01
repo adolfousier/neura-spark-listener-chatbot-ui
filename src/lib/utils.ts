@@ -74,47 +74,19 @@ export function getFirstMessage(message?: string): string {
   return import.meta.env.DEFAULT_WELCOME_MESSAGE || "Hello! I'm your AI assistant. How can I help you today?";
 }
 
+// SECURITY FIX: All requests now go through our secure server
 export function getApiUrlForProvider(provider: Provider): string {
-  switch (provider) {
-    case 'groq':
-      return import.meta.env.VITE_GROQ_API_URL || 'https://api.groq.com/openai/v1/chat/completions';
-    case 'claude':
-      // Use the proxy URL for Claude API requests
-      return import.meta.env.VITE_CLAUDE_API_URL || '/api/claude-proxy';
-    case 'openai':
-      return import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
-    case 'openrouter':
-      return import.meta.env.VITE_OPENROUTER_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
-    case 'flowise':
-      return import.meta.env.VITE_FLOWISE_API_URL || 'http://localhost:3000/api/v1/prediction';
-    case 'neurarouter':
-      return import.meta.env.VITE_NEURA_ROUTER_API_URL || 'https://api.meetneura.ai/v1/chat/completions/router';
-    case 'google':
-      return import.meta.env.VITE_GOOGLE_API_URL || 'https://generativelanguage.googleapis.com';
-    default:
-      return 'https://api.groq.com/openai/v1/chat/completions';
-  }
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+  // All providers now use the same secure endpoint
+  return `${baseUrl}/api/chat/completions`;
 }
 
+// SECURITY FIX: API keys are now server-side only
+// Client no longer needs direct access to API keys
 export function getApiKeyForProvider(provider: Provider): string {
-  switch (provider) {
-    case 'groq':
-      return import.meta.env.VITE_GROQ_API_KEY || '';
-    case 'claude':
-      return import.meta.env.VITE_CLAUDE_API_KEY || '';
-    case 'openai':
-      return import.meta.env.VITE_OPENAI_API_KEY || '';
-    case 'openrouter':
-      return import.meta.env.VITE_OPENROUTER_API_KEY || '';
-    case 'flowise':
-      return import.meta.env.VITE_FLOWISE_API_KEY || '';
-    case 'neurarouter':
-      return import.meta.env.VITE_NEURA_ROUTER_API_KEY || '';
-    case 'google':
-      return import.meta.env.VITE_GOOGLE_API_KEY || '';
-    default:
-      return import.meta.env.VITE_GROQ_API_KEY || '';
-  }
+  // Return empty string - keys are handled server-side now
+  console.warn('API keys are now handled server-side for security. This function is deprecated.');
+  return '';
 }
 
 export function getTemplateClass(template: string): string {
@@ -131,10 +103,11 @@ export function getTemplateClass(template: string): string {
 }
 
 /**
- * Gets the OpenAI API key for TTS
+ * Gets the OpenAI API key for TTS (DEPRECATED - now server-side only)
  */
 export function getOpenAITTSApiKey(): string {
-  return import.meta.env.VITE_OPENAI_API_KEY || '';
+  console.warn('TTS API keys are now handled server-side for security.');
+  return '';
 }
 
 /**
@@ -152,10 +125,11 @@ export function getOpenAITTSVoice(): string {
 }
 
 /**
- * Gets the Groq API key for STT
+ * Gets the Groq API key for STT (DEPRECATED - now server-side only)
  */
 export function getGroqSTTApiKey(): string {
-  return import.meta.env.VITE_GROQ_API_KEY || '';
+  console.warn('STT API keys are now handled server-side for security.');
+  return '';
 }
 
 /**
@@ -166,24 +140,50 @@ export function getGroqSTTModel(): string {
 }
 
 /**
- * Gets the Azure Blob Storage container name
+ * Gets the Azure Blob Storage container name (DEPRECATED - now server-side only)
  */
 export function getAzureStorageContainerName(): string {
-  return import.meta.env.VITE_AZURE_STORAGE_CONTAINER_ID || '';
+  console.warn('Azure Storage credentials are now handled server-side for security.');
+  return '';
 }
 
 /**
- * Gets the Azure Blob Storage account name
+ * Gets the Azure Blob Storage account name (DEPRECATED - now server-side only)
  */
 export function getAzureStorageAccountName(): string {
-  return import.meta.env.VITE_AZURE_STORAGE_ACCOUNT_NAME || '';
+  console.warn('Azure Storage credentials are now handled server-side for security.');
+  return '';
 }
 
 /**
- * Gets the Azure Blob Storage SAS token
+ * Gets the Azure Blob Storage SAS token (DEPRECATED - now server-side only)
  */
 export function getAzureStorageSasToken(): string {
-  return import.meta.env.VITE_AZURE_STORAGE_SAS_TOKEN || '';
+  console.warn('Azure Storage credentials are now handled server-side for security.');
+  return '';
+}
+
+/**
+ * Get the secure server base URL
+ */
+export function getSecureApiBaseUrl(): string {
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+}
+
+/**
+ * Get the secure TTS endpoint
+ */
+export function getTTSApiUrl(): string {
+  const baseUrl = getSecureApiBaseUrl();
+  return `${baseUrl}/api/tts`;
+}
+
+/**
+ * Get the secure STT endpoint
+ */
+export function getSTTApiUrl(): string {
+  const baseUrl = getSecureApiBaseUrl();
+  return `${baseUrl}/api/stt`;
 }
 
 
