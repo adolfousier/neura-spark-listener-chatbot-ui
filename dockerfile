@@ -1,5 +1,5 @@
 # Multi-stage build for secure server setup
-FROM node:18-buster AS builder
+FROM node:20-bookworm AS builder
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Production stage
-FROM node:18-buster AS production
+FROM node:20-bookworm AS production
 
 WORKDIR /app
 
