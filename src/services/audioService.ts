@@ -4,7 +4,8 @@ import {
   getOpenAITTSVoice,
   getGroqSTTModel,
   getTTSApiUrl,
-  getSTTApiUrl
+  getSTTApiUrl,
+  getSecureApiBaseUrl
 } from '@/lib/utils';
 
 /**
@@ -313,11 +314,27 @@ export async function convertAndUploadTextToSpeech(text: string): Promise<{ audi
   try {
     // First convert text to speech via our server endpoint
     console.log('[Audio Debug] Converting text to speech via server endpoint');
-    const apiKey = getOpenAITTSApiKey();
     const model = getOpenAITTSModel();
     const voice = getOpenAITTSVoice() as any; // Cast to any to avoid type errors
     
-    const audioData = await textToSpeech(processText, apiKey, model, voice);
+    // Use server-side TTS endpoint instead of direct API call
+    const response = await fetch(`${getSecureApiBaseUrl()}/api/tts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: processText,
+        model: model,
+        voice: voice
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`TTS API request failed: ${response.statusText}`);
+    }
+
+    const audioData = await response.arrayBuffer();
     console.log('[Audio Debug] TTS conversion successful, audio size:', audioData.byteLength);
     
     if (!audioData || audioData.byteLength === 0) {

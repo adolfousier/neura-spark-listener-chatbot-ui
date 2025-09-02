@@ -20,6 +20,8 @@ dist-ssr
 *.env 
 .env*
 .env.old
+/node_modules
+/build
 
 # Editor directories and files
 .vscode/*

@@ -7,14 +7,13 @@
 
   "scripts": {
     "dev": "npm run db:setup && concurrently \"npm run server:dev\" \"vite\"",
-    "build": "npm run db:setup && npm run build:server && vite build",
+    "build": "npm run db:setup && vite build",
     "build:dev": "npm run db:setup && vite build --mode development",
-    "build:server": "tsc -p tsconfig.server.json",
     "lint": "eslint .",
     "preview": "npm run db:setup && concurrently \"npm run server\" \"vite preview\"",
     "server": "npm run db:setup && tsx server.ts",
     "server:dev": "npm run db:setup && tsx watch server.ts",
-    "server:prod": "npm run db:setup && node dist/server.js",
+    "server:prod": "npm run db:setup && tsx server.ts",
     "start": "npm run db:setup && npm run server",
     "start:prod": "NODE_ENV=production npm run db:setup && npm run server",
     "frontend": "vite",

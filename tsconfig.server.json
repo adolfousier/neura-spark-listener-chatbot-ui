@@ -12,8 +12,30 @@
     "rootDir": ".",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/types": ["./src/types/index.ts"],
+      "@/types/*": ["./src/types/*"]
+    }
   },
-  "include": ["server.ts"],
-  "exclude": ["node_modules", "dist", "src"]
+  "include": [
+    "server.ts",
+    "src/api/**/*",
+    "src/services/**/*",
+    "src/lib/**/*",
+    "src/types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/components/**/*",
+    "src/pages/**/*",
+    "src/context/**/*",
+    "src/hooks/**/*",
+    "**/*.tsx",
+    "**/*.jsx"
+  ]
 }

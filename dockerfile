@@ -29,7 +29,7 @@ RUN mkdir -p data/audio data/uploads && \
 # First Time - Generate Prisma Client
 RUN npx prisma generate
 
-# Build both server and client (includes server build now)
+# Build client only (server runs with tsx)
 RUN npm run build
 
 # Production stage
@@ -51,9 +51,8 @@ COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/build ./build
 COPY --from=builder /app/server.ts ./
-COPY --from=builder /app/tsconfig.server.json ./
 COPY --from=builder /app/prisma ./prisma
 
 # Create data directory structure with proper permissions
