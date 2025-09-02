@@ -22,9 +22,9 @@ RUN npm install firebase@latest
 # Copy entire project
 COPY . .
 
-# Create necessary directories and set permissions
-RUN mkdir -p app/src/data/audio uploads && \
-  chmod -R 777 src/data uploads
+# Create data directory structure with proper permissions  
+RUN mkdir -p data/audio data/uploads && \
+    chmod 755 data
 
 # First Time - Generate Prisma Client
 RUN npx prisma generate
@@ -56,9 +56,9 @@ COPY --from=builder /app/server.ts ./
 COPY --from=builder /app/tsconfig.server.json ./
 COPY --from=builder /app/prisma ./prisma
 
-# Create necessary directories
-RUN mkdir -p uploads src/data/audio && \
-  chmod -R 777 src/data uploads
+# Create data directory structure with proper permissions
+RUN mkdir -p data/audio data/uploads && \
+    chmod 755 data
 
 # Install tsx for running TypeScript in production
 RUN npm install -g tsx

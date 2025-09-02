@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 3001;
 
 // Configure multer for file uploads
 const upload = multer({ 
-  dest: 'uploads/',
+  dest: 'data/uploads/',
   limits: {
     fileSize: 25 * 1024 * 1024 // 25MB limit
   }
@@ -609,9 +609,9 @@ app.delete('/api/database/conversations', async (req, res) => {
   }
 });
 
-// Ensure uploads directory exists
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads', { recursive: true });
+// Ensure data directory structure exists
+if (!fs.existsSync('data/uploads')) {
+  fs.mkdirSync('data/uploads', { recursive: true });
 }
 
 // Start server
