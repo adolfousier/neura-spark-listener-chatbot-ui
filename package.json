@@ -15,7 +15,7 @@
     "server": "npm run db:setup && tsx server.ts",
     "server:dev": "npm run db:setup && tsx watch server.ts",
     "server:prod": "npm run db:setup && tsx server.ts",
-    "start": "npm run db:setup && concurrently \"npm run server\" \"vite preview --port 4173 --host\"",
+    "start": "npm run db:setup && concurrently \"npm run server\" \"vite preview\"",
     "start:prod": "NODE_ENV=production npm run db:setup && npm run server",
     "frontend": "vite",
     "db:setup": "prisma generate && prisma db push",
