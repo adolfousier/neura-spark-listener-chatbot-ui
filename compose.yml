@@ -6,6 +6,7 @@ services:
     image: meetneuraai/neura-open-source-ui:latest
     container_name: ${CONTAINER_NAME}
     ports:
+      - "4173:4173"  # Frontend client port
       - "4174:4174"  # Backend server port
     env_file:
       - .env

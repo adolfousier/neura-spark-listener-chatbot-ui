@@ -615,7 +615,7 @@ if (!fs.existsSync('data/uploads')) {
 }
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Secure API server running on http://localhost:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
   console.log(`🔒 API keys are now server-side only - no browser exposure!`);
