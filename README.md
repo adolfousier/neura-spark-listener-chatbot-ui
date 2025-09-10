@@ -295,6 +295,25 @@ npm run format
 
 ## Change Log
 
+### v0.4.1 - Docker & Infrastructure Improvements
+
+**🐳 Docker & Deployment Enhancements**
+
+- **Updated Base Image**: Upgraded from Node 18-buster to Node 20-bookworm for better security and performance
+- **Streamlined Docker Build**: Simplified build process with new `build:docker` script that skips database setup during container build
+- **Improved Data Directory Structure**: Standardized data storage to `data/uploads` and `data/audio` directories with proper permissions
+- **Enhanced Container Configuration**: Updated compose.yml to use official Docker Hub image `meetneuraai/neura-open-source-ui:latest`
+- **Optimized Database Initialization**: Moved Prisma generate and db push to runtime for better container startup reliability
+- **Server-side TTS Integration**: Fixed audio service to use secure server-side TTS endpoints instead of client-side API calls
+- **TypeScript Configuration Updates**: Enhanced tsconfig.server.json with proper path mapping and type resolution
+- **Improved .gitignore**: Added additional build artifacts and temporary files to prevent accidental commits
+
+**Infrastructure Changes:**
+- Dockerfile optimizations for multi-stage builds
+- Better volume mounting for database persistence (`./db:/app/db`)
+- Removed server compilation step from build process
+- Production runtime uses tsx directly for better TypeScript support
+
 ### v0.4.0 - Security Overhaul
 
 **🔒 MAJOR SECURITY UPDATE - API Key Protection**

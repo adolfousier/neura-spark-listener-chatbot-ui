@@ -6,13 +6,13 @@ services:
     image: meetneuraai/neura-open-source-ui:latest
     container_name: ${CONTAINER_NAME}
     ports:
-      - "3001:3001"  # Updated to use secure server port
+      - "4174:4174"  # Backend server port
     env_file:
       - .env
     environment:
       # SECURITY: Server-side API keys (not exposed to browser)
       - NODE_ENV=production
-      - PORT=3001
+      - PORT=4174
       - GROQ_API_KEY=${GROQ_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - CLAUDE_API_KEY=${CLAUDE_API_KEY}
@@ -47,7 +47,7 @@ services:
       - VITE_GROQ_API_MODEL=${VITE_GROQ_API_MODEL}
       - VITE_STREAM_ENABLED=${VITE_STREAM_ENABLED}
       - VITE_REASONING_FORMAT=${VITE_REASONING_FORMAT}
-      - VITE_API_BASE_URL=http://localhost:3001
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
       
       # Database
       - DATABASE_URL=${DATABASE_URL}
@@ -62,7 +62,7 @@ services:
       - ./data/audio:/app/data/audio
       #- ./prisma:/app/prisma
       #- ./prisma/dev.db:/app/prisma/dev.db
-      - ./db:/app/db
+      - ./prisma/db:/app/prisma/db
     logging:
       driver: "json-file"
       options:

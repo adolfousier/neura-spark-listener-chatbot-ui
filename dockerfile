@@ -60,10 +60,9 @@ RUN mkdir -p data/audio data/uploads && \
 # Install tsx for running TypeScript in production
 RUN npm install -g tsx
 
-
-
 # Expose both server and client ports
-EXPOSE 3001
+EXPOSE 4173
+EXPOSE 4174
 
 # Set production environment
 ENV NODE_ENV=production

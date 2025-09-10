@@ -15,7 +15,7 @@ import * as dbService from './src/services/dbService.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 4174;
 
 // Configure multer for file uploads
 const upload = multer({ 
@@ -27,7 +27,7 @@ const upload = multer({
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:4173', 'http://localhost:3000', 'http://localhost:5173'],
+  origin: ['http://localhost:4173', 'http://localhost:3000', 'http://localhost:5173', 'https://opensource-ai-chatbot.meetneura.ai'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
