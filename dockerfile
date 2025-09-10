@@ -50,6 +50,7 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy built application from builder stage
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/server.ts ./
+COPY --from=builder /app/src ./src
 COPY --from=builder /app/prisma ./prisma
 
 # Create data directory structure with proper permissions
