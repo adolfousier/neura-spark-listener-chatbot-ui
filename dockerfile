@@ -47,11 +47,11 @@ COPY package*.json ./
 # Install only production dependencies
 RUN npm ci --only=production && npm cache clean --force
 
+# Remove node_modules and reinstall to ensure clean state
+RUN rm -rf node_modules && npm ci --only=production
+
 # Copy built application from builder stage
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/server.ts ./
-COPY --from=builder /app/src ./src
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app .
 
 # Create data directory structure with proper permissions
 RUN mkdir -p data/audio data/uploads && \
