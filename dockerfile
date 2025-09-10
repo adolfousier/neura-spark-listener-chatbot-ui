@@ -26,11 +26,8 @@ COPY . .
 RUN mkdir -p data/audio data/uploads && \
     chmod 755 data
 
-# First Time - Generate Prisma Client
-RUN npx prisma generate
-
-# Build client only (server runs with tsx)
-RUN npm run build
+# Build client only (skip db:setup during build)
+RUN npm run build:docker
 
 # Production stage
 FROM node:20-bookworm AS production
@@ -62,8 +59,7 @@ RUN mkdir -p data/audio data/uploads && \
 # Install tsx for running TypeScript in production
 RUN npm install -g tsx
 
-# Generate Prisma Client in production
-RUN npx prisma generate
+
 
 # Expose both server and client ports
 EXPOSE 3001
@@ -72,4 +68,4 @@ EXPOSE 3001
 ENV NODE_ENV=production
 
 # Initialize database and start the secure server
-CMD npx prisma db push && npm run start:prod
+CMD npx prisma generate && npx prisma db push && tsx server.ts

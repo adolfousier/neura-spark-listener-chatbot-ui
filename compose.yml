@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    image: neura-open-source-ui:v0.4.0
+    image: meetneuraai/neura-open-source-ui:latest
     container_name: ${CONTAINER_NAME}
     ports:
       - "3001:3001"  # Updated to use secure server port
@@ -62,7 +62,7 @@ services:
       - ./data/audio:/app/data/audio
       #- ./prisma:/app/prisma
       #- ./prisma/dev.db:/app/prisma/dev.db
-      - ./prisma/db/dev.db:/app/prisma/db/dev.db
+      - ./db:/app/db
     logging:
       driver: "json-file"
       options:
