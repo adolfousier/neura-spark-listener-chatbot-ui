@@ -44,11 +44,8 @@ RUN apt-get update -y \
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# Remove node_modules and reinstall to ensure clean state
-RUN rm -rf node_modules && npm ci --only=production
+# Install all dependencies (needed for concurrently, vite, etc.)
+RUN npm ci && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app .
@@ -67,5 +64,5 @@ EXPOSE 4174
 # Set production environment
 ENV NODE_ENV=production
 
-# Initialize database and start the secure server
-CMD npx prisma generate && npx prisma db push && tsx server.ts
+# Start both server and client
+CMD npm start
