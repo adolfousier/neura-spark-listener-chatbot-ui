@@ -540,7 +540,8 @@ export default defineConfig(({ mode }) => {
   },
   preview: {
     host: "::",
-      port: parseInt(env.VITE_PORT || '4173'),
+    port: parseInt(env.VITE_PORT || '4173'),
+    strictPort: true,
     allowedHosts: [
       "localhost",
       "127.0.0.1",

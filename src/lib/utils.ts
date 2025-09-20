@@ -76,7 +76,7 @@ export function getFirstMessage(message?: string): string {
 
 // SECURITY FIX: All requests now go through our secure server
 export function getApiUrlForProvider(provider: Provider): string {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+  const baseUrl = getSecureApiBaseUrl();
   // All providers now use the same secure endpoint
   return `${baseUrl}/api/chat/completions`;
 }
@@ -167,7 +167,7 @@ export function getAzureStorageSasToken(): string {
  * Get the secure server base URL
  */
 export function getSecureApiBaseUrl(): string {
-  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+  return import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:4174';
 }
 
 /**

@@ -9,12 +9,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 
-RUN mkdir -p data/audio data/uploads && npm run build:docker
+RUN mkdir -p data/audio data/uploads && npx prisma generate && npm run build
 
 EXPOSE 4173 4174
 
-CMD npm start
+CMD npx prisma db push && npm start

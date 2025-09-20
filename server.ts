@@ -32,6 +32,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Trust proxy for SSL termination
+app.set('trust proxy', 1);
 app.use(express.json());
 
 // Serve static files in production
