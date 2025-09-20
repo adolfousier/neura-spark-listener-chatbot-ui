@@ -1,68 +1,20 @@
-# Multi-stage build for secure server setup
-FROM node:20-bookworm AS builder
+FROM node:20-bookworm
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update -y \
-    && apt-get install -y \
-        build-essential \
-        libssl-dev \
-        ca-certificates
-
-# Install Rollup dependency explicitly first
-RUN npm install --save-dev @rollup/rollup-linux-x64-gnu
-
-COPY package*.json ./
-RUN npm install
-
-# Install Firebase dependencies explicitly
-RUN npm install firebase@latest
-
-# Copy entire project
-COPY . .
-
-# Create data directory structure with proper permissions  
-RUN mkdir -p data/audio data/uploads && \
-    chmod 755 data
-
-# Build client only (skip db:setup during build)
-RUN npm run build:docker
-
-# Production stage
-FROM node:20-bookworm AS production
-
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update -y \
-    && apt-get install -y \
-        ca-certificates \
-    && apt-get clean \
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libssl-dev \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
 COPY package*.json ./
+RUN npm ci
 
-# Install all dependencies (needed for concurrently, vite, etc.)
-RUN npm ci && npm cache clean --force
+COPY . .
 
-# Copy built application from builder stage
-COPY --from=builder /app .
+RUN mkdir -p data/audio data/uploads && npm run build:docker
 
-# Create data directory structure with proper permissions
-RUN mkdir -p data/audio data/uploads && \
-    chmod 755 data
+EXPOSE 4173 4174
 
-# Install tsx for running TypeScript in production
-RUN npm install -g tsx
-
-# Expose both server and client ports
-EXPOSE 4173
-EXPOSE 4174
-
-# Set production environment
-ENV NODE_ENV=production
-
-# Start both server and client
 CMD npm start
