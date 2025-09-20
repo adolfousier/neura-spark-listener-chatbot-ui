@@ -202,25 +202,39 @@ export default function ChatPage() {
                   <span>Model A: {settings.modelA || 'Not Selected'}</span>
                   <span>Model B: {settings.modelB || 'Not Selected'}</span>
                 </div>
-                <a 
-                  href="https://meetneura.ai" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors mt-1"
-                >
-                  Powered by Neura AI
-                </a>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <Button size="sm" variant="ghost" asChild>
+                    <a href="https://github.com/adolfousier/neura-spark-listener-chatbot-ui" target="_blank" rel="noopener noreferrer" className="text-xs">
+                      ⭐ Star
+                    </a>
+                  </Button>
+                  <a 
+                    href="https://meetneura.ai" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Powered by Neura AI
+                  </a>
+                </div>
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                <a 
-                  href="https://meetneura.ai" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors mt-1"
-                >
-                  Powered by Neura AI
-                </a>
+                <div className="flex items-center justify-center gap-2">
+                  <Button size="sm" variant="ghost" asChild>
+                    <a href="https://github.com/adolfousier/neura-spark-listener-chatbot-ui" target="_blank" rel="noopener noreferrer" className="text-xs">
+                      ⭐ Star
+                    </a>
+                  </Button>
+                  <a 
+                    href="https://meetneura.ai" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Powered by Neura AI
+                  </a>
+                </div>
               </div>
             )}
           </footer>

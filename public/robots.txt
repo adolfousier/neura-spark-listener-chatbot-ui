@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://opensource-ai-chatbot.meetneura.ai/sitemap.xml

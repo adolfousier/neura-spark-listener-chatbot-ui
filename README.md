@@ -295,6 +295,25 @@ npm run format
 
 ## Change Log
 
+### v0.4.2 - SEO & GitHub Integration (2025-09-20)
+
+**🔍 SEO Enhancements**
+
+- **Complete SEO Optimization**: Added comprehensive meta tags, Open Graph data, and Twitter Cards
+- **Sitemap & Robots.txt**: Created proper XML sitemap and robots.txt for search engine discovery
+- **Structured Data**: Implemented JSON-LD schema markup for rich search results
+- **Enhanced Meta Tags**: Improved title, description, keywords, and canonical URLs
+- **Social Media Ready**: Optimized sharing with `neura-spark-listener-preview-vertical.png` image
+
+**🌟 GitHub Integration**
+
+- **Star & Fork CTAs**: Added prominent GitHub buttons across all pages
+- **Homepage Footer**: "⭐ Star on GitHub" and "🍴 Fork" buttons with responsive design
+- **Chat Page Integration**: Compact GitHub star button in both regular and arena modes
+- **Templates Page**: Consistent GitHub CTA matching homepage design
+- **Improved Engagement**: Direct links to repository starring and forking
+
+
 ### v0.4.1 - Docker & Infrastructure Improvements
 
 **🐳 Docker & Deployment Enhancements**
